@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Raksha Bandhan Thing For You 🎀</title>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Caveat:wght@500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --pink:#ffc9de;
+  --pink-deep:#ff9ec4;
+  --cream:#fff8ec;
+  --cream-card:#fffdf7;
+  --yellow:#ffc93c;
+  --red:#e8483a;
+  --ink:#1a1a1a;
+  --shadow: 4px 4px 0 var(--ink);
+  --shadow-sm: 2px 2px 0 var(--ink);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Nunito',sans-serif;
+  color:var(--ink);
+  min-height:100vh;
+  overflow-x:hidden;
+  background:var(--cream);
+}
+h1,h2,h3,.display{font-family:'Baloo 2',sans-serif;}
+.script{font-family:'Caveat',cursive;}
+
+.dots{
+  background-image: radial-gradient(var(--ink) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  background-position: -8px -8px;
+  opacity:0.14;
+  position:absolute; inset:0; pointer-events:none;
+}
+
+.page{
+  position:relative;
+  min-height:100vh;
+  width:100%;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:32px 20px 80px;
+  overflow:hidden;
+}
+.page.active{display:flex;}
+
+.btn{
+  font-family:'Baloo 2',sans-serif;
+  font-weight:700;
+  font-size:1.05rem;
+  letter-spacing:0.04em;
+  border:3px solid var(--ink);
+  border-radius:16px;
+  padding:14px 34px;
+  background:var(--yellow);
+  color:var(--ink);
+  box-shadow:var(--shadow);
+  cursor:pointer;
+  transition:transform .12s ease, box-shadow .12s ease;
+  text-transform:uppercase;
+}
+.btn:hover{transform:translateY(-2px) rotate(-1deg);}
+.btn:active{transform:translate(2px,2px); box-shadow:var(--shadow-sm);}
+.btn:disabled{opacity:.4; cursor:not-allowed; transform:none;}
+.btn.ghost{background:var(--cream-card);}
+.btn.red{background:var(--red); color:#fff;}
+.btn.small{padding:10px 20px; font-size:.9rem;}
+
+.card{
+  background:var(--cream-card);
+  border:3px solid var(--ink);
+  border-radius:22px;
+  box-shadow:var(--shadow);
+  padding:20px 22px;
+}
+.tape{
+  position:absolute; top:-14px; left:50%; transform:translateX(-50%) rotate(-2deg);
+  width:90px; height:26px; background:rgba(255,201,60,.85);
+  border:2px solid rgba(26,26,26,.5);
+}
+
+/* ---------- floating hearts / confetti ---------- */
+.floaters{position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0;}
+.floaters span{
+  position:absolute; bottom:-40px; font-size:1.4rem; opacity:.8;
+  animation: floatUp linear infinite;
+}
+@keyframes floatUp{
+  0%{ transform:translateY(0) rotate(0deg); opacity:0; }
+  10%{ opacity:.85; }
+  100%{ transform:translateY(-120vh) rotate(30deg); opacity:0; }
+}
+.confetti-piece{
+  position:fixed; top:-20px; font-size:1.3rem; z-index:400; pointer-events:none;
+  animation: confettiFall 1.8s ease-in forwards;
+}
+@keyframes confettiFall{
+  0%{ transform:translateY(0) rotate(0deg); opacity:1; }
+  100%{ transform:translateY(100vh) rotate(360deg); opacity:0; }
+}
+
+/* ---------- stickers (hearts + teddies scattered on every page) ---------- */
+.sticker{
+  position:absolute; pointer-events:none; z-index:0; opacity:.95;
+  filter:drop-shadow(1px 3px 0 rgba(0,0,0,.14));
+  animation: stickerBob 2.8s ease-in-out infinite;
+}
+@keyframes stickerBob{
+  0%,100%{ transform-origin:center; }
+  50%{ translate: 0 -6px; }
+}
+
+/* ---------- music toggle ---------- */
+#musicToggle{
+  position:fixed; bottom:16px; right:16px; z-index:300;
+  width:52px; height:52px; border-radius:50%;
+  background:var(--yellow); border:3px solid var(--ink); box-shadow:var(--shadow-sm);
+  font-size:1.3rem; display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+
+/* ---------- PAGE: INTRO (Happy Friendship Day + rising balloon) ---------- */
+#page-intro{background: linear-gradient(#dff3ea, var(--pink)); justify-content:center;}
+.intro-inner{max-width:420px; width:100%; text-align:center; position:relative; z-index:1;}
+.intro-title{font-size:2rem; line-height:1.15; margin-bottom:6px;}
+.intro-sub{font-family:'Caveat',cursive; font-size:1.3rem; margin-top:10px;}
+.balloon-scene{ position:relative; height:340px; display:flex; align-items:flex-end; justify-content:center; overflow:visible; }
+.balloon-rig{ position:relative; animation: balloonRise 3.6s ease-in-out infinite; }
+@keyframes balloonRise{
+  0%{ transform:translateY(20px) translateX(0); }
+  50%{ transform:translateY(-14px) translateX(10px); }
+  100%{ transform:translateY(20px) translateX(0); }
+}
+.hot-balloon{
+  width:130px; height:150px; margin:0 auto;
+  border-radius:50% 50% 46% 46% / 62% 62% 38% 38%;
+  background: repeating-linear-gradient(90deg, #8fe0cb 0 22px, #ffc9de 22px 44px, #ffc93c 44px 66px);
+  border:3px solid var(--ink); box-shadow:var(--shadow);
+  position:relative;
+}
+.balloon-lines{ width:2px; height:26px; background:var(--ink); margin:0 auto; }
+.balloon-basket{
+  width:56px; height:30px; margin:0 auto; background:#c88b52;
+  border:3px solid var(--ink); border-radius:4px;
+  background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.15) 0 4px, transparent 4px 8px);
+}
+.balloon-thread{ width:2px; height:20px; background:var(--ink); margin:0 auto; }
+.balloon-envelope{
+  width:34px; height:24px; margin:0 auto; background:#fffdf7; border:2px solid var(--ink); border-radius:3px;
+  position:relative;
+}
+.balloon-envelope::after{
+  content:"🎀"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:.8rem; color:var(--red);
+}
+.intro-hearts span{
+  position:absolute; font-size:1.1rem; animation: heartDrift 3s ease-in-out infinite;
+}
+@keyframes heartDrift{
+  0%,100%{ transform:translateY(0) rotate(-6deg); opacity:.7; }
+  50%{ transform:translateY(-16px) rotate(6deg); opacity:1; }
+}
+.intro-continue{margin-top:18px;}
+
+/* ---------- PAGE: QUOTE CARDS ---------- */
+#page-quotes{background:var(--cream);}
+.quotes-inner{max-width:420px; width:100%; text-align:center; position:relative; z-index:1;}
+.quotes-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px;}
+.quote-card{
+  position:relative; height:150px; border-radius:16px; border:3px solid var(--ink);
+  background:var(--cream-card); box-shadow:var(--shadow-sm); cursor:pointer;
+  display:flex; align-items:center; justify-content:center; padding:10px;
+  perspective:800px;
+}
+.quote-card:nth-child(5){ grid-column: 1 / span 2; max-width:calc(50% - 7px); margin:0 auto; }
+.qc-face{ transition: opacity .25s ease; text-align:center; }
+.qc-front .qc-emoji{font-size:2.6rem; display:block;}
+.qc-front .qc-label{font-family:'Baloo 2'; font-weight:700; font-size:.82rem; margin-top:4px;}
+.qc-back{ display:none; font-family:'Caveat',cursive; font-size:1.2rem; line-height:1.35; }
+.quote-card.flipped{background:#fff4e0;}
+.quote-card.flipped .qc-front{display:none;}
+.quote-card.flipped .qc-back{display:block;}
+.quotes-continue{margin-top:22px;}
+.quotes-hint{font-family:'Caveat',cursive; font-size:1.2rem; margin-top:8px;}
+
+/* ---------- balloon wish chip ---------- */
+.wish-chip{
+  position:fixed; z-index:350; background:var(--cream-card); border:3px solid var(--ink);
+  border-radius:14px; padding:8px 14px; font-family:'Caveat',cursive; font-size:1.1rem;
+  box-shadow:var(--shadow-sm); pointer-events:none;
+  animation: wishRise 2.2s ease-out forwards;
+}
+@keyframes wishRise{
+  0%{ transform:translateY(0) scale(.7); opacity:0; }
+  15%{ transform:translateY(-10px) scale(1); opacity:1; }
+  80%{ opacity:1; }
+  100%{ transform:translateY(-60px) scale(1); opacity:0; }
+}
+
+/* ---------- discount code ---------- */
+.discount-row{display:flex; gap:8px; margin:14px auto 4px; max-width:320px;}
+.discount-row input{
+  flex:1; border:3px solid var(--ink); border-radius:12px; padding:10px 12px;
+  font-family:'Nunito'; font-size:.95rem; text-transform:uppercase;
+}
+.discount-note{font-size:.85rem; min-height:18px; margin-top:4px;}
+.discount-note.ok{color:#2f7d55; font-weight:700;}
+.discount-note.err{color:var(--red); font-weight:700;}
+.price.struck{ text-decoration:line-through; opacity:.5; font-size:1.6rem; }
+.price-row{display:flex; align-items:baseline; justify-content:center; gap:10px;}
+
+
+#page-setup{background:var(--pink);}
+.setup-inner{max-width:420px; width:100%; position:relative; z-index:1;}
+.setup-inner h1{text-align:center; font-size:1.6rem; margin-bottom:2px;}
+.setup-inner .script{display:block; text-align:center; font-size:1.2rem; margin-bottom:18px;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-weight:700; font-family:'Baloo 2'; font-size:.95rem; margin-bottom:6px;}
+.field input[type="text"], .field textarea{
+  width:100%; border:3px solid var(--ink); border-radius:14px; padding:12px 14px;
+  font-family:'Nunito'; font-size:1rem; background:var(--cream-card);
+}
+.field textarea{min-height:100px; font-family:'Caveat',cursive; font-size:1.2rem; resize:vertical;}
+.msg-actions{display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;}
+.photo-upload{
+  border:3px dashed var(--ink); border-radius:16px; padding:16px; text-align:center;
+  background:var(--cream-card); cursor:pointer;
+}
+.photo-upload input{display:none;}
+.photo-preview{
+  margin-top:10px; width:140px; height:140px; object-fit:cover; border-radius:12px;
+  border:3px solid var(--ink); display:none;
+}
+.setup-continue{display:block; margin:22px auto 0;}
+.form-hint{font-size:.8rem; color:#555; margin-top:4px;}
+
+/* ---------- PAGE: LANDING ---------- */
+#page-landing{background:var(--pink);}
+.landing-inner{max-width:420px; width:100%; text-align:center; position:relative; z-index:1; margin-top:20px;}
+.sparkle{font-size:2rem; margin-bottom:6px; display:inline-block; animation: wobble 2.4s ease-in-out infinite;}
+@keyframes wobble{ 0%,100%{transform:rotate(-8deg);} 50%{transform:rotate(8deg);} }
+.notif{
+  position:relative; background:var(--cream-card); border:3px solid var(--ink); border-radius:20px;
+  box-shadow:var(--shadow); padding:16px 18px; text-align:left; margin-bottom:26px;
+}
+.notif .eyebrow{font-size:.72rem; font-weight:700; letter-spacing:.08em; color:#555; text-transform:uppercase;}
+.notif .body-txt{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:1.15rem; margin-top:4px;}
+.hint{margin-top:22px; font-family:'Caveat',cursive; font-size:1.3rem;}
+
+/* ---------- PAGE: ENVELOPE ---------- */
+#page-envelope{background:var(--cream);}
+.envelope-wrap{max-width:340px; width:100%; margin-top:60px; text-align:center; position:relative; z-index:1;}
+.envelope{
+  position:relative; width:100%; aspect-ratio:1/0.72;
+  background:#fffdf7; border:3px solid var(--ink); border-radius:12px;
+  box-shadow:var(--shadow); overflow:hidden; cursor:pointer;
+  animation: envPulse 1.6s ease-in-out infinite;
+}
+.envelope:hover{transform:scale(1.02);}
+@keyframes envPulse{
+  0%,100%{ box-shadow:var(--shadow); }
+  50%{ box-shadow: 4px 4px 0 var(--ink), 0 0 0 6px rgba(255,201,60,.35); }
+}
+.envelope.torn{animation:none;}
+.envelope .flap{
+  position:absolute; top:0; left:0; width:100%; height:60%;
+  background:#ffe9b8; border-bottom:3px solid var(--ink);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  transition: transform .5s cubic-bezier(.2,.8,.2,1);
+}
+.envelope.torn .flap{ transform: rotateX(160deg); }
+.seal{
+  position:absolute; top:44%; left:50%; transform:translate(-50%,-50%);
+  width:54px; height:54px; border-radius:50%; background:var(--red);
+  border:3px solid var(--ink); display:flex; align-items:center; justify-content:center;
+  font-size:1.4rem; color:var(--yellow); z-index:2;
+}
+.envelope.torn .seal{opacity:0; transition:opacity .3s;}
+.envelope-msg{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:'Caveat',cursive; font-size:1.4rem; padding:20px; text-align:center; opacity:0;
+  transition:opacity .4s .3s;
+}
+.envelope.torn .envelope-msg{opacity:1;}
+.tear-hint{margin-top:18px; font-family:'Caveat',cursive; font-size:1.2rem;}
+.continue-wrap{margin-top:26px; display:none;}
+.envelope.torn ~ .continue-wrap{display:block;}
+
+/* ---------- PAGE: MEMORY (single photo reveal) ---------- */
+#page-memory{background:var(--cream);}
+.memory-inner{max-width:340px; width:100%; text-align:center; position:relative; z-index:1; margin-top:20px;}
+.polaroid{
+  position:relative; background:#fff; border:3px solid var(--ink); border-radius:14px;
+  padding:14px 14px 44px; box-shadow:var(--shadow); margin:0 auto;
+}
+.polaroid img{width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:6px; display:block; background:#f3e6d8;}
+.polaroid .cap{margin-top:10px; font-family:'Caveat',cursive; font-size:1.2rem;}
+.memory-continue{margin-top:22px;}
+
+/* ---------- PAGE: AGREEMENT ---------- */
+#page-agreement{background:var(--pink);}
+.agreement-inner{max-width:400px; width:100%; position:relative; z-index:1;}
+.agreement-title{text-align:center; font-size:1.05rem; letter-spacing:.03em; margin-bottom:10px;}
+.rule{ display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px dashed rgba(26,26,26,.25); }
+.rule input{ width:22px; height:22px; margin-top:2px; accent-color:#1a8f5e; cursor:pointer; flex:none; }
+.rule input:disabled{cursor:default; opacity:.85;}
+.rule label{font-weight:600; font-size:.98rem; cursor:pointer;}
+.rule.locked label{color:#2f7d55;}
+.terms-row{display:flex; justify-content:space-between; font-size:.85rem; margin-top:14px; color:#444;}
+.accept-wrap{margin-top:20px; text-align:center;}
+
+/* ---------- PAGE: FINALE (door + balloons + burst) ---------- */
+#page-finale{background:var(--pink);}
+.finale-inner{max-width:440px; width:100%; text-align:center; position:relative; z-index:1;}
+.door-frame{ position:relative; width:200px; height:280px; margin:10px auto 10px; perspective:900px; }
+.door{
+  position:absolute; inset:0; background:#c88b52; border:4px solid var(--ink); border-radius:8px 8px 0 0;
+  box-shadow:var(--shadow); transform-origin:left center; transition:transform .8s cubic-bezier(.2,.8,.2,1);
+}
+.door.open{transform:rotateY(-100deg);}
+.door .knob{position:absolute; right:14px; top:50%; width:14px; height:14px; border-radius:50%; background:var(--yellow); border:2px solid var(--ink);}
+.chase-row{ position:relative; height:70px; width:280px; margin:16px auto 4px; }
+.chase-row .btn{ position:absolute; top:0; }
+#btn-yes{left:16px; z-index:3;}
+#btn-no{right:16px; z-index:2; transition:left .15s ease, top .15s ease, right .15s ease;}
+.knock-hint{font-family:'Caveat',cursive; font-size:1.2rem; margin-top:6px;}
+
+.balloons-wrap{display:none; margin-top:10px; width:100%;}
+.balloons-wrap.show{display:block;}
+.balloons-row{display:flex; justify-content:center; gap:26px; margin-top:14px;}
+.balloon{
+  width:64px; height:78px; border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+  border:3px solid var(--ink); cursor:pointer; position:relative;
+  transition:transform .15s ease; box-shadow:var(--shadow-sm);
+}
+.balloon:hover{transform:translateY(-4px) scale(1.04);}
+.balloon.popped{ transform:scale(0); opacity:0; pointer-events:none; }
+.balloon-hint{font-family:'Caveat',cursive; font-size:1.2rem; margin-top:14px;}
+
+.burst-overlay{
+  position:fixed; inset:0; background:rgba(255,201,222,.97); z-index:500;
+  display:none; align-items:center; justify-content:center; padding:24px; text-align:center;
+}
+.burst-overlay.show{display:flex;}
+.burst-card{
+  background:var(--cream-card); border:4px solid var(--ink); border-radius:26px; box-shadow:var(--shadow);
+  padding:30px 24px; max-width:420px; animation: burstIn .5s cubic-bezier(.2,.9,.3,1.4);
+}
+@keyframes burstIn{ 0%{transform:scale(.3); opacity:0;} 100%{transform:scale(1); opacity:1;} }
+.burst-card .burst-text{font-family:'Caveat',cursive; font-size:1.7rem; line-height:1.35; white-space:pre-wrap;}
+.burst-card .burst-continue{margin-top:20px;}
+
+/* ---------- PAGE: PAYMENT ---------- */
+#page-payment{background:var(--yellow);}
+.pay-inner{max-width:380px; width:100%; text-align:center; position:relative; z-index:1;}
+.price{font-size:2.6rem; margin:8px 0;}
+.pay-card{margin:18px 0;}
+.demo-note{font-size:.85rem; color:#555; margin-top:14px;}
+
+/* ---------- PAGE: FINAL ---------- */
+#page-final{background:var(--pink);}
+.final-inner{max-width:420px; width:100%; text-align:center; position:relative; z-index:1;}
+.final-msg{font-family:'Caveat',cursive; font-size:1.5rem; margin:14px 0 18px; white-space:pre-wrap;}
+.final-photo{width:180px; height:180px; object-fit:cover; border-radius:14px; border:3px solid var(--ink); box-shadow:var(--shadow); margin-bottom:16px; display:none;}
+.qr-box{background:#fff; border:3px solid var(--ink); border-radius:16px; padding:14px; display:inline-block; box-shadow:var(--shadow);}
+.qr-box img{display:block; width:180px; height:180px;}
+.link-row{display:flex; gap:8px; margin-top:16px; max-width:360px; margin-left:auto; margin-right:auto;}
+.link-row input{flex:1; border:3px solid var(--ink); border-radius:12px; padding:10px 12px; font-family:'Nunito'; font-size:.85rem;}
+
+.progress-dots{position:fixed; top:14px; left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:50;}
+.progress-dots span{width:8px; height:8px; border-radius:50%; background:rgba(26,26,26,.25); border:1.5px solid var(--ink);}
+.progress-dots span.on{background:var(--ink);}
+
+@media(max-width:420px){ .door-frame{width:170px; height:240px;} .balloon{width:52px; height:64px;} }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     MUSIC — drop an MP3 file named "music.mp3" next to this HTML
+     file (same folder) and it will play here. Optional; if the
+     file is missing this button just does nothing when tapped.
+     ============================================================ -->
+<audio id="bgMusic" loop preload="none">
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+<div id="musicToggle" onclick="toggleMusic()">🔈</div>
+
+<div class="progress-dots" id="progressDots">
+  <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<!-- ================= PAGE -1: INTRO ================= -->
+<section id="page-intro" class="page active">
+  <div class="dots"></div>
+  <div class="intro-inner">
+    <h1 class="intro-title">Happy Raksha<br>Bandhan 🎀</h1>
+    <div class="balloon-scene">
+      <div class="intro-hearts">
+        <span style="left:14%; top:30%;">🎀</span>
+        <span style="right:12%; top:20%; animation-delay:.6s;">🪢</span>
+        <span style="left:20%; top:55%; animation-delay:1.1s;">❤️</span>
+        <span style="right:18%; top:50%; animation-delay:1.6s;">✨</span>
+        <span style="left:6%; top:12%; animation-delay:.3s; font-size:1.3rem;">🍬</span>
+      </div>
+      <div class="balloon-rig">
+        <div class="hot-balloon"></div>
+        <div class="balloon-lines"></div>
+        <div class="balloon-basket"></div>
+        <div class="balloon-thread"></div>
+        <div class="balloon-envelope"></div>
+      </div>
+    </div>
+    <div class="intro-sub">a rakhi delivery for you…</div>
+    <button class="btn intro-continue" onclick="goTo('page-setup')">Continue</button>
+  </div>
+</section>
+
+<!-- ================= PAGE 0: SETUP FORM ================= -->
+<section id="page-setup" class="page">
+  <div class="dots"></div>
+  <span class="sticker" style="top:8%; left:6%; font-size:2.8rem; transform:rotate(-12deg);">🎀</span>
+  <span class="sticker" style="top:6%; right:8%; font-size:2.6rem; transform:rotate(10deg);">🍬</span>
+  <span class="sticker" style="bottom:10%; left:8%; font-size:2.6rem; transform:rotate(8deg);">🪢</span>
+  <div class="setup-inner">
+    <h1>Let's set this up 🎀</h1>
+    <span class="script">a couple quick things before we start…</span>
+
+    <div class="field">
+      <label for="inputYourName">Your name</label>
+      <input type="text" id="inputYourName" placeholder="e.g. Priya">
+    </div>
+    <div class="field">
+      <label for="inputFriendName">Your sibling's name</label>
+      <input type="text" id="inputFriendName" placeholder="e.g. Rohan bhai 🫡">
+    </div>
+    <div class="field">
+      <label for="inputMessage">Your message to them</label>
+      <textarea id="inputMessage" placeholder="Dear..."></textarea>
+      <div class="msg-actions">
+        <button class="btn ghost small" type="button" onclick="aiWriteMessage()">✨ Let AI write it</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>A photo of you two (required)</label>
+      <label class="photo-upload" for="inputPhoto">
+        <span id="photoUploadLabel">📷 tap to add a photo</span>
+        <input type="file" id="inputPhoto" accept="image/*" onchange="handlePhotoUpload(event)">
+      </label>
+      <img id="photoPreview" class="photo-preview" alt="preview">
+      <div class="form-hint">automatically compressed to under 500KB</div>
+    </div>
+
+    <button class="btn setup-continue" onclick="submitSetup()">Continue</button>
+  </div>
+</section>
+
+<!-- ================= PAGE 1: LANDING ================= -->
+<section id="page-landing" class="page">
+  <div class="dots"></div>
+  <div class="floaters" id="landingFloaters"></div>
+  <span class="sticker" style="top:10%; right:6%; font-size:2.8rem; transform:rotate(-10deg);">🎁</span>
+  <span class="sticker" style="bottom:12%; left:6%; font-size:2.6rem; transform:rotate(14deg);">❤️</span>
+  <span class="sticker" style="bottom:6%; right:8%; font-size:2.4rem; transform:rotate(-6deg);">🍬</span>
+  <div class="landing-inner">
+    <div class="sparkle">✨</div>
+    <div class="notif">
+      <div class="eyebrow">For <span id="landingFriendName">you</span> · Now</div>
+      <div class="body-txt">1 unopened message</div>
+    </div>
+    <div class="notif">
+      <div class="eyebrow">For <span id="landingFriendName2">you</span> · Now</div>
+      <div class="body-txt">Actually… it's more than a message.</div>
+    </div>
+    <button class="btn" onclick="startExperience()">Open It</button>
+    <div class="hint">best experienced with sound on 🎧</div>
+  </div>
+</section>
+
+<!-- ================= PAGE 2: ENVELOPE ================= -->
+<section id="page-envelope" class="page">
+  <div class="dots"></div>
+  <span class="sticker" style="top:8%; left:8%; font-size:2.6rem; transform:rotate(-8deg);">🎀</span>
+  <span class="sticker" style="top:10%; right:8%; font-size:2.5rem; transform:rotate(12deg);">🪢</span>
+  <div class="envelope-wrap">
+    <div class="envelope" id="envelope" onclick="tearOpen()">
+      <div class="flap" id="envFlap"></div>
+      <div class="seal">♥</div>
+      <div class="envelope-msg" id="envMsg"></div>
+    </div>
+    <div class="tear-hint" id="tearHint">👆 tap to open it</div>
+    <div class="continue-wrap">
+      <button class="btn" onclick="goTo('page-memory')">Continue</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PAGE 3: MEMORY (photo) ================= -->
+<section id="page-memory" class="page">
+  <div class="dots"></div>
+  <span class="sticker" style="top:6%; left:6%; font-size:2.7rem; transform:rotate(10deg);">🎀</span>
+  <span class="sticker" style="bottom:14%; right:8%; font-size:2.8rem; transform:rotate(-10deg);">🎁</span>
+  <div class="memory-inner">
+    <h2>a little memory 💛</h2>
+    <div class="polaroid">
+      <div class="tape"></div>
+      <img id="memoryPhoto" src="" alt="a memory">
+      <div class="cap">this one's a keeper</div>
+    </div>
+    <button class="btn memory-continue" onclick="goTo('page-quotes')">Continue</button>
+  </div>
+</section>
+
+<!-- ================= PAGE 3.5: QUOTE CARDS ================= -->
+<section id="page-quotes" class="page">
+  <div class="dots"></div>
+  <span class="sticker" style="top:5%; left:4%; font-size:3rem; transform:rotate(-10deg);">🪢</span>
+  <span class="sticker" style="top:5%; right:4%; font-size:3rem; transform:rotate(10deg);">🎀</span>
+  <span class="sticker" style="bottom:6%; left:6%; font-size:2.6rem; transform:rotate(12deg);">🍬</span>
+  <span class="sticker" style="bottom:8%; right:5%; font-size:2.4rem; transform:rotate(-8deg);">❤️</span>
+  <div class="quotes-inner">
+    <h2>tap a card 💐</h2>
+    <div class="quotes-grid" id="quotesGrid"></div>
+    <div class="quotes-hint">each one's got something to say…</div>
+    <button class="btn quotes-continue" onclick="goTo('page-agreement')">Continue</button>
+  </div>
+</section>
+
+<!-- ================= PAGE 4: AGREEMENT ================= -->
+<section id="page-agreement" class="page">
+  <div class="dots"></div>
+  <span class="sticker" style="top:6%; right:6%; font-size:2.6rem; transform:rotate(-10deg);">❤️</span>
+  <span class="sticker" style="bottom:8%; left:6%; font-size:2.6rem; transform:rotate(12deg);">🎀</span>
+  <div class="agreement-inner">
+    <div class="card">
+      <div class="agreement-title" style="font-family:'Baloo 2'; font-weight:700; text-transform:uppercase;">Rakhi Renewal Agreement</div>
+      <div class="agreement-title script" style="font-size:1.25rem; margin-bottom:14px;">By continuing, <span id="friendNameSpan">your sibling</span> agrees to:</div>
+      <div id="ruleList"></div>
+      <div class="terms-row">
+        <span><strong>Term:</strong> Lifetime</span>
+        <span><strong>Cancellation policy:</strong> None</span>
+      </div>
+    </div>
+    <div class="accept-wrap">
+      <button class="btn" id="acceptBtn" disabled onclick="confettiBurst(); goTo('page-finale')">I Accept</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PAGE 5: FINALE (door / balloons / burst) ================= -->
+<section id="page-finale" class="page">
+  <div class="dots"></div>
+  <span class="sticker" style="top:6%; left:6%; font-size:2.7rem; transform:rotate(-10deg);">🪢</span>
+  <span class="sticker" style="top:8%; right:6%; font-size:2.7rem; transform:rotate(10deg);">🎀</span>
+  <div class="finale-inner">
+
+    <div class="door-stage" id="doorStage">
+      <h2>*knock knock*</h2>
+      <div class="door-frame">
+        <div class="door" id="theDoor"><div class="knob"></div></div>
+      </div>
+      <div class="chase-row">
+        <button class="btn" id="btn-yes" onclick="openDoor()">Yes</button>
+        <button class="btn ghost" id="btn-no" onmouseenter="dodgeNo()" onclick="dodgeNo()">No</button>
+      </div>
+      <div class="knock-hint">go on… open it 👀</div>
+    </div>
+
+    <div class="balloons-wrap" id="balloonsWrap">
+      <h2>pop the balloons 🎈</h2>
+      <div class="balloons-row" id="balloonsRow"></div>
+      <div class="balloon-hint">tap each one…</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- burst overlay: sits on top of everything -->
+<div class="burst-overlay" id="burstOverlay">
+  <div class="burst-card">
+    <div class="burst-text" id="burstText"></div>
+    <button class="btn burst-continue" onclick="closeBurst()">Continue</button>
+  </div>
+</div>
+
+<!-- ================= PAGE 6: PAYMENT ================= -->
+<section id="page-payment" class="page">
+  <div class="dots"></div>
+  <span class="sticker" style="top:8%; left:8%; font-size:2.6rem; transform:rotate(-8deg);">🎀</span>
+  <div class="pay-inner">
+    <h2>Unlock the finale 🎁</h2>
+    <div class="card pay-card">
+      <div class="script" style="font-size:1.1rem;">everything you just built —</div>
+      <div class="price-row">
+        <span class="price" id="priceOriginal">₹119</span>
+        <span class="price" id="priceFinal" style="display:none;"></span>
+      </div>
+      <div class="script" style="font-size:1.1rem;">one-time, to reveal it &amp; share it</div>
+      <div class="discount-row">
+        <input type="text" id="discountInput" placeholder="discount code">
+        <button class="btn ghost small" type="button" onclick="applyDiscount()">Apply</button>
+      </div>
+      <div class="discount-note" id="discountNote"></div>
+    </div>
+    <button class="btn" id="payBtn" onclick="startPayment()">Pay &amp; Reveal</button>
+    <div class="demo-note" id="demoNote"></div>
+  </div>
+</section>
+
+<!-- ================= PAGE 7: FINAL ================= -->
+<section id="page-final" class="page">
+  <div class="dots"></div>
+  <span class="sticker" style="top:6%; right:6%; font-size:2.7rem; transform:rotate(10deg);">🎀</span>
+  <span class="sticker" style="bottom:8%; left:6%; font-size:2.7rem; transform:rotate(-10deg);">❤️</span>
+  <span class="sticker" style="top:8%; left:5%; font-size:2.4rem; transform:rotate(8deg);">🍬</span>
+  <div class="final-inner">
+    <h1>🎀 for you.</h1>
+    <img id="finalPhoto" class="final-photo" alt="a memory">
+    <div class="final-msg" id="finalMessageDisplay"></div>
+    <div class="qr-box">
+      <img id="qrImg" src="" alt="QR code to share">
+    </div>
+    <p class="script" style="font-size:1.15rem; margin-top:14px;">scan or send this — whoever opens it sees it free, no payment needed.</p>
+    <div class="link-row">
+      <input id="shareLinkInput" readonly>
+      <button class="btn small" onclick="copyShareLink()">Copy</button>
+    </div>
+  </div>
+</section>
+
+
+<script>
+/* =====================================================================
+   CONFIG
+   ===================================================================== */
+const CONFIG = {
+  // --- Supabase: stores the free "share token" so a friend who opens
+  // your link/QR sees the finale without paying ---
+  SUPABASE_URL: "https://otemshexmvidrmllotfn.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90ZW1zaGV4bXZpZHJtbGxvdGZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjQ2MzQsImV4cCI6MjEwMDg0MDYzNH0.FWNB2Gj6pTELyXj6Gje70REzZCkv-cJQKCFgIIQTrAA",
+
+  // --- Razorpay (this is your public Key ID — safe to keep in the page,
+  // it's the counterpart to your secret key, which never goes here) ---
+  RAZORPAY_KEY_ID: "rzp_live_TH7gs9nI1yjgD8",
+  AMOUNT_PAISE: 11900, // ₹119.00 base price
+
+  // --- Discount codes (client-side only — fine for a personal gift page,
+  // not meant as a real e-commerce coupon system). Value = % off. ---
+  DISCOUNT_CODES: {
+    "BHAIYA10": 10,
+    "RAKHI20": 20,
+    "HALFOFF50": 50,
+    "FREEHUG100": 100
+  }
+};
+
+/*
+  SUPABASE SETUP — run this once in the Supabase SQL editor for your
+  project (otemshexmvidrmllotfn):
+
+  create table shares (
+    token text primary key,
+    sender_name text,
+    friend_name text,
+    message text,
+    photo text,
+    created_at timestamptz default now()
+  );
+
+  alter table shares enable row level security;
+  create policy "public read" on shares for select using (true);
+  create policy "public insert" on shares for insert with check (true);
+
+  Note: since RAZORPAY_KEY_ID above is a LIVE key, the ₹99 charge is real
+  once deployed. Switch to a rzp_test_... key while you're testing the
+  flow, then swap back to live when you're ready to actually send this.
+*/
+
+let sb = null;
+if (CONFIG.SUPABASE_URL && window.supabase) {
+  sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+}
+
+/* =====================================================================
+   GIFT DATA — collected on the setup form, used throughout the site
+   ===================================================================== */
+let giftData = { yourName:"", friendName:"", message:"", photo:null };
+
+// True when this page was opened via a shared "?t=TOKEN" link — meaning
+// someone is viewing a gift a friend already paid for. They should get
+// the FULL experience (every page) but never see the payment page.
+let isSharedView = false;
+let sharedToken = null;
+
+/* =====================================================================
+   NAV / PROGRESS
+   ===================================================================== */
+const PAGE_ORDER = ["page-intro","page-setup","page-landing","page-envelope","page-memory","page-quotes","page-agreement","page-finale"];
+function updateDots(id){
+  const idx = PAGE_ORDER.indexOf(id);
+  document.querySelectorAll('#progressDots span').forEach((el,i)=>{
+    el.classList.toggle('on', idx>=0 && i<=idx);
+  });
+  document.getElementById('progressDots').style.display = idx>=0 ? 'flex' : 'none';
+}
+function goTo(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  updateDots(id);
+  if(id==='page-finale') initFinale();
+  if(id==='page-agreement') initAgreement();
+  if(id==='page-payment') initPayment();
+}
+
+/* =====================================================================
+   CUTE EXTRAS — floating hearts + confetti burst
+   ===================================================================== */
+(function(){
+  const wrap = document.getElementById('landingFloaters');
+  const icons = ['💛','✨','🎀','🪢','🍬'];
+  for (let i=0; i<10; i++){
+    const s = document.createElement('span');
+    s.textContent = icons[i % icons.length];
+    s.style.left = Math.random()*94 + '%';
+    s.style.animationDuration = (7 + Math.random()*6) + 's';
+    s.style.animationDelay = (Math.random()*6) + 's';
+    wrap.appendChild(s);
+  }
+})();
+function confettiBurst(icons, count){
+  icons = icons || ['🎉','💛','🎀','✨','🪢','❤️'];
+  count = count || 24;
+  for (let i=0; i<count; i++){
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.textContent = icons[Math.floor(Math.random()*icons.length)];
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.fontSize = (1.1 + Math.random()*.8) + 'rem';
+    c.style.animationDelay = (Math.random()*.4) + 's';
+    c.style.animationDuration = (1.4 + Math.random()*.8) + 's';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(), 2400);
+  }
+}
+function ribbonBurst(){
+  confettiBurst(['🎀','🪢','❤️','🍬','🎁','🎗️'], 30);
+}
+
+/* =====================================================================
+   QUOTE CARDS — tap each cute card to flip it and reveal a friendship
+   quote + a gratitude line
+   ===================================================================== */
+const QUOTE_CARDS = [
+  { emoji:"🎀", label:"for you", message:"you make even boring days feel less boring." },
+  { emoji:"🥊", label:"partner in crime", message:"we've fought like cats and dogs, but nobody messes with you on my watch." },
+  { emoji:"🧸", label:"squishy", message:"you're basically the human version of a comfort blanket, ngl." },
+  { emoji:"🍬", label:"favourite troublemaker", message:"not to be dramatic but you're literally my favourite sibling." },
+  { emoji:"🪢", label:"forever tied", message:"just wanted to say... this rakhi is the easy part, I've got you always." }
+];
+(function(){
+  const grid = document.getElementById('quotesGrid');
+  QUOTE_CARDS.forEach((c, i)=>{
+    const card = document.createElement('div');
+    card.className = 'quote-card';
+    card.innerHTML = `
+      <div class="qc-face qc-front">
+        <span class="qc-emoji">${c.emoji}</span>
+        <span class="qc-label">${c.label}</span>
+      </div>
+      <div class="qc-face qc-back">
+        <div>${c.message}</div>
+      </div>`;
+    card.onclick = ()=>{
+      const wasFlipped = card.classList.contains('flipped');
+      card.classList.toggle('flipped');
+      if (!wasFlipped) ribbonBurst();
+    };
+    grid.appendChild(card);
+  });
+})();
+
+/* =====================================================================
+   MUSIC — place a file named music.mp3 next to this HTML file
+   ===================================================================== */
+function toggleMusic(){
+  const audio = document.getElementById('bgMusic');
+  const btn = document.getElementById('musicToggle');
+  if (audio.paused){
+    audio.play().then(()=>{ btn.textContent='🔊'; }).catch(()=>{ btn.textContent='🚫'; });
+  } else {
+    audio.pause();
+    btn.textContent='🔈';
+  }
+}
+
+/* =====================================================================
+   PAGE 0 — SETUP FORM
+   ===================================================================== */
+const PHOTO_TARGET_BYTES = 500 * 1024; // keep every uploaded photo under 500KB
+
+function canvasToBlob(canvas, quality){
+  return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+}
+function blobToDataUrl(blob){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(blob);
+  });
+}
+async function compressImageUnderTarget(img){
+  const dims = [1000, 800, 600, 450];
+  const qualities = [0.82, 0.7, 0.6, 0.5, 0.4, 0.3];
+  let bestBlob = null;
+  for (const maxDim of dims){
+    let w = img.width, h = img.height;
+    if (w > h && w > maxDim){ h = Math.round(h*(maxDim/w)); w = maxDim; }
+    else if (h >= w && h > maxDim){ w = Math.round(w*(maxDim/h)); h = maxDim; }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    for (const q of qualities){
+      const blob = await canvasToBlob(canvas, q);
+      if (!bestBlob || blob.size < bestBlob.size) bestBlob = blob;
+      if (blob.size <= PHOTO_TARGET_BYTES) return blob;
+    }
+  }
+  return bestBlob; // smallest we could manage — used even if slightly over target
+}
+async function handlePhotoUpload(evt){
+  const file = evt.target.files[0];
+  if (!file) return;
+  document.getElementById('photoUploadLabel').textContent = '⏳ compressing…';
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = async function(){
+      const blob = await compressImageUnderTarget(img);
+      const dataUrl = await blobToDataUrl(blob);
+      giftData.photo = dataUrl;
+      const preview = document.getElementById('photoPreview');
+      preview.src = dataUrl;
+      preview.style.display = 'block';
+      const kb = Math.round(blob.size/1024);
+      document.getElementById('photoUploadLabel').textContent = `✅ photo added (${kb}KB) — tap to change`;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+const AI_MESSAGE_TEMPLATES = [
+  (you,friend)=>`Dear ${friend},\nI don't say this enough, but I'm really glad you're my sibling. Thanks for every childhood fight that ended in five minutes, every time you covered for me, and every time you showed up without me even asking. Happy Raksha Bandhan.\n— ${you}`,
+  (you,friend)=>`Dear ${friend},\nWe've annoyed each other more than anyone else on earth, and somehow that's exactly why this bond works. Here's to more fights, more inside jokes, and more years of this. Happy Raksha Bandhan!\n— ${you}`,
+  (you,friend)=>`Dear ${friend},\nJust a reminder that you're one of the best parts of my life, even when you're being impossible. Thanks for the laughs, the protection, and putting up with me always.\n— ${you}`
+];
+function aiWriteMessage(){
+  const you = document.getElementById('inputYourName').value.trim() || "your sibling";
+  const friend = document.getElementById('inputFriendName').value.trim() || "you";
+  const template = AI_MESSAGE_TEMPLATES[Math.floor(Math.random()*AI_MESSAGE_TEMPLATES.length)];
+  document.getElementById('inputMessage').value = template(you, friend);
+}
+
+function submitSetup(){
+  const you = document.getElementById('inputYourName').value.trim();
+  const friend = document.getElementById('inputFriendName').value.trim();
+  const message = document.getElementById('inputMessage').value.trim();
+  if (!you || !friend || !message){
+    alert("Fill in your name, your sibling's name, and a message before continuing 🎀");
+    return;
+  }
+  if (!giftData.photo){
+    alert("Add a photo before continuing — it's part of the surprise! 📷");
+    return;
+  }
+  giftData.yourName = you;
+  giftData.friendName = friend;
+  giftData.message = message;
+  try { localStorage.setItem('fd_giftdata', JSON.stringify(giftData)); } catch(e){}
+
+  document.getElementById('landingFriendName').textContent = friend;
+  document.getElementById('landingFriendName2').textContent = friend;
+  document.getElementById('memoryPhoto').src = giftData.photo ||
+    'data:image/svg+xml;utf8,' + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#ffe3ef"/><text x="200" y="210" font-size="90" text-anchor="middle">🎀</text></svg>`
+    );
+
+  goTo('page-landing');
+}
+function startExperience(){
+  const audio = document.getElementById('bgMusic');
+  audio.play().then(()=>{ document.getElementById('musicToggle').textContent='🔊'; }).catch(()=>{});
+  goTo('page-envelope');
+}
+
+/* =====================================================================
+   PAGE 2 — ENVELOPE TAP TO OPEN
+   ===================================================================== */
+function tearOpen(){
+  const env = document.getElementById('envelope');
+  if (env.classList.contains('torn')) return;
+  env.classList.add('torn');
+  document.getElementById('tearHint').style.display='none';
+  document.getElementById('envMsg').textContent =
+    "There's something waiting for you on the other side of this page…";
+}
+
+/* =====================================================================
+   PAGE 4 — AGREEMENT (everything pre-checked except the last one)
+   ===================================================================== */
+const RULES = [
+  "Continue stealing food off my plate without asking",
+  "Provide emotional support when required",
+  "Take my side even when I'm clearly wrong",
+  "Cover for me in front of Mom and Dad",
+  'Remain available for random "bhai/didi listen" messages',
+  "Maintain confidentiality regarding embarrassing childhood photos"
+];
+function initAgreement(){
+  document.getElementById('friendNameSpan').textContent = giftData.friendName || "your sibling";
+  const list = document.getElementById('ruleList');
+  list.innerHTML='';
+  RULES.forEach((r,i)=>{
+    const isLast = i === RULES.length - 1;
+    const row = document.createElement('div');
+    row.className = 'rule' + (isLast ? '' : ' locked');
+    row.innerHTML = `<input type="checkbox" id="rule${i}" ${isLast ? '' : 'checked disabled'} onchange="checkAgreement()"><label for="rule${i}">${r}</label>`;
+    list.appendChild(row);
+  });
+  checkAgreement();
+}
+function checkAgreement(){
+  const all = RULES.every((_,i)=>document.getElementById('rule'+i).checked);
+  document.getElementById('acceptBtn').disabled = !all;
+}
+
+/* =====================================================================
+   PAGE 5 — FINALE: DOOR CHASE, 3 BALLOONS, MESSAGE BURST
+   ===================================================================== */
+let balloonsPopped = 0;
+function initFinale(){
+  document.getElementById('doorStage').style.display='flex';
+  document.getElementById('balloonsWrap').classList.remove('show');
+  document.getElementById('theDoor').classList.remove('open');
+  const noBtn = document.getElementById('btn-no');
+  noBtn.style.left = '';
+  noBtn.style.top = '';
+  noBtn.style.right = ''; // important: clears the inline override from a previous dodge
+  balloonsPopped = 0;
+}
+function dodgeNo(){
+  const row = document.querySelector('#doorStage .chase-row');
+  const btn = document.getElementById('btn-no');
+  const yesBtn = document.getElementById('btn-yes');
+  const safeZone = yesBtn.offsetWidth + 30; // never land on top of Yes
+  const maxX = row.clientWidth - btn.offsetWidth - 4;
+  const maxY = row.clientHeight - btn.offsetHeight - 4;
+  const x = Math.max(safeZone, safeZone + Math.random()*(maxX - safeZone));
+  const y = Math.max(0, Math.random()*maxY);
+  btn.style.right = 'auto';
+  btn.style.left = x+'px';
+  btn.style.top = y+'px';
+}
+function openDoor(){
+  document.getElementById('theDoor').classList.add('open');
+  confettiBurst();
+  setTimeout(()=>{
+    document.getElementById('doorStage').style.display='none';
+    document.getElementById('balloonsWrap').classList.add('show');
+    buildBalloons();
+  }, 700);
+}
+const BALLOON_WISHES = [
+  "may your snack supply never run out 🍟",
+  "may we still be fighting over the last piece of mithai when we're old 👵",
+  "here's to more rakhis, more gifts, and more years of us 🎉"
+];
+function buildBalloons(){
+  const row = document.getElementById('balloonsRow');
+  row.innerHTML='';
+  const colors = ['var(--red)','var(--yellow)','var(--pink-deep)'];
+  for (let i=0; i<3; i++){
+    const b = document.createElement('div');
+    b.className='balloon';
+    b.style.background = colors[i];
+    b.onclick = (evt)=>{
+      if (b.classList.contains('popped')) return;
+      b.classList.add('popped');
+      balloonsPopped++;
+      confettiBurst();
+      showWishChip(BALLOON_WISHES[i], evt);
+      if (balloonsPopped >= 3) setTimeout(revealMessageBurst, 900);
+    };
+    row.appendChild(b);
+  }
+}
+function showWishChip(text, evt){
+  const chip = document.createElement('div');
+  chip.className = 'wish-chip';
+  chip.textContent = '🎈 ' + text;
+  const rect = evt.target.getBoundingClientRect();
+  chip.style.left = Math.max(10, rect.left - 40) + 'px';
+  chip.style.top = (rect.top - 20) + 'px';
+  document.body.appendChild(chip);
+  setTimeout(()=>chip.remove(), 2200);
+}
+function revealMessageBurst(){
+  document.getElementById('burstText').textContent = giftData.message || "Happy Raksha Bandhan 🎀";
+  document.getElementById('burstOverlay').classList.add('show');
+}
+function closeBurst(){
+  document.getElementById('burstOverlay').classList.remove('show');
+  if (isSharedView) {
+    // A friend opening a shared link never sees the paywall — they go
+    // straight from the balloon-pop finale to the reveal page.
+    goTo('page-final');
+    renderFinal(sharedToken, giftData.message, giftData.photo);
+  } else {
+    goTo('page-payment');
+  }
+}
+
+/* =====================================================================
+   PAGE 6 — PAYMENT (with discount codes)
+   ===================================================================== */
+let currentAmountPaise = CONFIG.AMOUNT_PAISE;
+function formatRupees(paise){ return '₹' + Math.round(paise/100); }
+function initPayment(){
+  currentAmountPaise = CONFIG.AMOUNT_PAISE;
+  document.getElementById('priceOriginal').textContent = formatRupees(CONFIG.AMOUNT_PAISE);
+  document.getElementById('priceOriginal').classList.remove('struck');
+  document.getElementById('priceFinal').style.display = 'none';
+  document.getElementById('discountInput').value = '';
+  document.getElementById('discountNote').textContent = '';
+  document.getElementById('discountNote').className = 'discount-note';
+  document.getElementById('payBtn').textContent = 'Pay & Reveal';
+  document.getElementById('payBtn').disabled = false;
+  paymentSettled = true;
+
+  const demo = !CONFIG.RAZORPAY_KEY_ID;
+  document.getElementById('demoNote').textContent = demo
+    ? "Demo mode: no Razorpay key configured yet. Click the button to simulate a successful payment."
+    : "";
+}
+function applyDiscount(){
+  const code = document.getElementById('discountInput').value.trim().toUpperCase();
+  const note = document.getElementById('discountNote');
+  const payBtn = document.getElementById('payBtn');
+  const pct = CONFIG.DISCOUNT_CODES[code];
+  if (!code){
+    note.textContent = ''; note.className='discount-note';
+    return;
+  }
+  if (!pct){
+    note.textContent = "That code doesn't seem to be valid.";
+    note.className = 'discount-note err';
+    currentAmountPaise = CONFIG.AMOUNT_PAISE;
+    document.getElementById('priceOriginal').classList.remove('struck');
+    document.getElementById('priceFinal').style.display = 'none';
+    payBtn.textContent = 'Pay & Reveal';
+    return;
+  }
+  currentAmountPaise = Math.round(CONFIG.AMOUNT_PAISE * (100 - pct) / 100);
+  document.getElementById('priceOriginal').classList.add('struck');
+  document.getElementById('priceFinal').style.display = 'inline';
+  if (pct >= 100){
+    document.getElementById('priceFinal').textContent = 'FREE 🎉';
+    note.textContent = `100% off — it's on the house! 🎉`;
+    payBtn.textContent = 'Reveal for Free 🎁';
+  } else {
+    document.getElementById('priceFinal').textContent = formatRupees(currentAmountPaise);
+    note.textContent = `${pct}% off applied 🎉`;
+    payBtn.textContent = 'Pay & Reveal';
+  }
+  note.className = 'discount-note ok';
+}
+let paymentSettled = true; // true = no payment currently in flight
+function setPayBtnBusy(busy, label){
+  const payBtn = document.getElementById('payBtn');
+  payBtn.disabled = busy;
+  if (label) payBtn.textContent = label;
+}
+function showPaymentError(msg){
+  const note = document.getElementById('demoNote');
+  note.textContent = msg;
+}
+function startPayment(){
+  const demo = !CONFIG.RAZORPAY_KEY_ID;
+  // ₹0 (a fully-discounted code) or demo mode both skip Razorpay —
+  // Razorpay can't process a zero-amount charge anyway.
+  if (demo || currentAmountPaise <= 0) { onPaymentSuccess(); return; }
+  if (!paymentSettled) return; // ignore double-taps while one is in flight
+
+  // NOTE: for hardened production use, create the Razorpay "order" on a
+  // server using your Key SECRET, then pass order_id here instead of a
+  // raw amount. This simplified client-only flow is fine for a personal
+  // gift page but isn't the fully hardened pattern — and is the most
+  // likely reason a live UPI payment can get stuck on "Processing".
+  paymentSettled = false;
+  showPaymentError('');
+  setPayBtnBusy(true, 'Processing…');
+
+  // Safety net: if Razorpay never calls back (network hiccup, stuck
+  // "Processing" screen, etc.), don't leave the user stranded forever.
+  const safetyTimer = setTimeout(()=>{
+    if (paymentSettled) return;
+    paymentSettled = true;
+    setPayBtnBusy(false, 'Pay & Reveal');
+    showPaymentError("This is taking longer than expected. If money was deducted, it usually reflects within a few minutes — check your bank app, then try again if it didn't go through.");
+  }, 45000); // 45s
+
+  const rzp = new Razorpay({
+    key: CONFIG.RAZORPAY_KEY_ID,
+    amount: currentAmountPaise,
+    currency: "INR",
+    name: "Raksha Bandhan",
+    description: "Unlock the finale",
+    handler: function(response){
+      if (paymentSettled) return;
+      paymentSettled = true;
+      clearTimeout(safetyTimer);
+      onPaymentSuccess();
+    },
+    modal: {
+      ondismiss: function(){
+        if (paymentSettled) return;
+        paymentSettled = true;
+        clearTimeout(safetyTimer);
+        setPayBtnBusy(false, 'Pay & Reveal');
+      }
+    },
+    theme: { color: "#ffc93c" }
+  });
+  rzp.on('payment.failed', function(resp){
+    if (paymentSettled) return;
+    paymentSettled = true;
+    clearTimeout(safetyTimer);
+    setPayBtnBusy(false, 'Pay & Reveal');
+    showPaymentError("Payment failed" + (resp?.error?.description ? (": " + resp.error.description) : " — please try again."));
+  });
+  rzp.open();
+}
+async function onPaymentSuccess(){
+  const token = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
+  localStorage.setItem('fd_paid','true');
+  localStorage.setItem('fd_token', token);
+  try { localStorage.setItem('fd_giftdata', JSON.stringify(giftData)); } catch(e){}
+
+  if (sb) {
+    try {
+      await sb.from('shares').insert({
+        token,
+        sender_name: giftData.yourName,
+        friend_name: giftData.friendName,
+        message: giftData.message,
+        photo: giftData.photo
+      });
+    } catch(err){ console.warn('Supabase share save failed (check table/policy):', err); }
+  }
+  goTo('page-final');
+  renderFinal(token, giftData.message, giftData.photo);
+}
+
+/* =====================================================================
+   PAGE 7 — FINAL: MESSAGE + PHOTO + QR + SHARE LINK
+   ===================================================================== */
+function buildShareUrl(token){
+  const url = new URL(window.location.href);
+  url.search = '';
+  url.searchParams.set('t', token);
+  return url.toString();
+}
+function renderFinal(token, message, photo){
+  document.getElementById('finalMessageDisplay').textContent = message;
+  if (photo){
+    const img = document.getElementById('finalPhoto');
+    img.src = photo;
+    img.style.display = 'block';
+  }
+  const shareUrl = buildShareUrl(token);
+  document.getElementById('shareLinkInput').value = shareUrl;
+  document.getElementById('qrImg').src =
+    "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(shareUrl);
+}
+function copyShareLink(){
+  const input = document.getElementById('shareLinkInput');
+  input.select();
+  navigator.clipboard?.writeText(input.value);
+}
+
+/* =====================================================================
+   ENTRY POINT — ?t=TOKEN lets a friend view the finale for free
+   ===================================================================== */
+async function boot(){
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('t');
+
+  if (token) {
+    isSharedView = true;
+    sharedToken = token;
+
+    let message = null, photo = null, yourName = null, friendName = null;
+    if (sb) {
+      try {
+        const { data } = await sb.from('shares')
+          .select('sender_name,friend_name,message,photo')
+          .eq('token', token).single();
+        message = data?.message; photo = data?.photo;
+        yourName = data?.sender_name; friendName = data?.friend_name;
+      } catch(err){ console.warn('Could not load shared message from Supabase:', err); }
+    }
+    if (!message && localStorage.getItem('fd_token') === token) {
+      const saved = JSON.parse(localStorage.getItem('fd_giftdata') || '{}');
+      message = saved.message; photo = saved.photo;
+      yourName = saved.yourName; friendName = saved.friendName;
+    }
+
+    // Fill giftData so every page (landing, memory, agreement, finale...)
+    // renders exactly as it did for the sender — the friend gets the
+    // full built experience, not just the end card.
+    giftData.yourName = yourName || "";
+    giftData.friendName = friendName || "your sibling";
+    giftData.message = message || "You're the best sibling anyone could ask for. Happy Raksha Bandhan! 🎀";
+    giftData.photo = photo || null;
+
+    document.getElementById('landingFriendName').textContent = giftData.friendName;
+    document.getElementById('landingFriendName2').textContent = giftData.friendName;
+    document.getElementById('memoryPhoto').src = giftData.photo ||
+      'data:image/svg+xml;utf8,' + encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#ffe3ef"/><text x="200" y="210" font-size="90" text-anchor="middle">🎀</text></svg>`
+      );
+
+    // Start the friend at the very beginning of the built experience
+    // (skipping only the sender-only setup form) — not at the ending.
+    goTo('page-landing');
+    return;
+  }
+
+  updateDots('page-intro');
+}
+boot();
+</script>
+</body>
+</html>
