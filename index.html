@@ -452,7 +452,10 @@
         <div id="shareSection" style="width:100%; display:none;">
           <p class="subtext" style="font-weight:700; margin-top:14px;">Your permanent card link 🔗</p>
           <div class="link-box" id="shareLink"></div>
-          <button class="pill" style="margin-top:10px;" onclick="copyShareLink()">Copy Link</button>
+          <div class="pill-row" style="margin-top:10px;">
+            <button class="pill ghost" id="previewCardBtn" style="display:none;">👀 Preview Your Card</button>
+            <button class="pill" onclick="copyShareLink()">Copy Link</button>
+          </div>
         </div>
         <div id="viewerNote" style="display:none; margin-top:14px;">
           <button class="pill ghost" onclick="location.href=location.pathname">Make Your Own Rakhi Card</button>
@@ -467,6 +470,8 @@
 <audio id="bgMusic" loop></audio>
 <button class="music-toggle muted" id="musicToggle" onclick="toggleMusic()" title="Add a music link in the code to enable">🎵</button>
 
+<!-- Supabase client library — powers permanent card storage + link generation -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ============ MUSIC SETUP ============
    To hard-code your own background track, paste a direct audio file URL
@@ -487,6 +492,62 @@ function toggleMusic(){
   if(musicPlaying){ bgMusic.pause(); musicBtn.innerText = '🔇'; }
   else { bgMusic.play().catch(()=>{}); musicBtn.innerText = '🎵'; }
   musicPlaying = !musicPlaying;
+}
+
+/* ============ SUPABASE SETUP ============
+   This card uses Supabase (a free hosted Postgres database) so that each
+   finished, paid-for card gets a real permanent record and a short shareable
+   link — instead of stuffing all the card data into the URL itself.
+
+   SETUP STEPS:
+   1. Create a free project at https://supabase.com
+   2. Open the SQL editor in your project and run this to create the table:
+
+        create table public.rakhi_cards (
+          id text primary key,
+          from_name text not null,
+          to_name text not null,
+          relation text not null,
+          message text not null,
+          created_at timestamptz default now()
+        );
+
+        alter table public.rakhi_cards enable row level security;
+
+        create policy "Public can create cards"
+          on public.rakhi_cards for insert
+          to anon
+          with check (true);
+
+        create policy "Public can read cards"
+          on public.rakhi_cards for select
+          to anon
+          using (true);
+
+   3. In Project Settings → API, copy your "Project URL" and "anon public"
+      key and paste them below.
+
+   If these are left as-is (not configured), the site automatically falls
+   back to the old self-contained link (card data encoded into the URL and
+   shortened via is.gd), so sharing never breaks either way. */
+const SUPABASE_URL = "https://YOUR-PROJECT-ID.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-SUPABASE-ANON-PUBLIC-KEY";
+
+const supabaseReady = window.supabase
+  && SUPABASE_URL.startsWith('https://')
+  && !SUPABASE_URL.includes('YOUR-PROJECT-ID')
+  && !SUPABASE_ANON_KEY.includes('YOUR-SUPABASE');
+
+const supabaseClient = supabaseReady
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+/* Short, human-friendly, URL-safe card id (e.g. "aK7pQ2mX") */
+function generateCardId(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  let id = '';
+  for(let i = 0; i < 8; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id;
 }
 
 /* ============ STATE ============ */
@@ -697,31 +758,65 @@ function payNow(){
 }
 
 /* ============ SHAREABLE PERMANENT LINK ============
-   Since this card is a single self-contained file with no server/database,
-   the "permanent" link works by encoding the finished card's data directly
-   into the URL itself. As long as this exact HTML file stays hosted at a
-   stable address, that link will always re-open the same card — nothing to
-   expire or lose, because there's nothing stored anywhere else. Opening a
-   shared link replays the whole experience (ask / excited / you-are-my /
-   gifts / final) but skips the payment page, since it's already been paid
-   for and sent as a gift. */
+   After payment, the finished card is saved as a real row in Supabase
+   (see SUPABASE SETUP above) under a short random id, and the share link
+   is just "?id=<that id>". Opening the link looks the id up in Supabase and
+   replays the whole experience (ask / excited / you-are-my / gifts / final)
+   but skips the payment page, since it's already been paid for and sent as
+   a gift.
+
+   If Supabase isn't configured yet (or the save fails for any reason, e.g.
+   offline), this automatically falls back to encoding the card data
+   straight into the URL and shortening it with is.gd, so sharing never
+   breaks either way. */
 async function completeOrder(){
   state.message = document.getElementById('messageBox').value;
   document.getElementById('finalMessage').innerText = state.message;
   goTo('final');
 
+  document.getElementById('shareSection').style.display = 'block';
+  document.getElementById('viewerNote').style.display = 'none';
+  document.getElementById('shareLink').innerText = 'Saving your card…';
+  const previewBtn = document.getElementById('previewCardBtn');
+  if(previewBtn) previewBtn.style.display = 'none';
+
+  const shareUrl = await saveCardAndGetLink();
+  document.getElementById('shareLink').innerText = shareUrl;
+  window.__shareUrl = shareUrl;
+
+  // Let the person who paid preview the exact page their sibling will see.
+  if(previewBtn){
+    previewBtn.style.display = 'inline-block';
+    previewBtn.onclick = function(){ window.open(shareUrl, '_blank'); };
+  }
+}
+
+async function saveCardAndGetLink(){
+  const cardId = generateCardId();
+  const record = {
+    id: cardId,
+    from_name: state.from,
+    to_name: state.to,
+    relation: state.relation,
+    message: state.message
+  };
+
+  if(supabaseClient){
+    try{
+      const { error } = await supabaseClient.from('rakhi_cards').insert(record);
+      if(error) throw error;
+      return location.origin + location.pathname + '?id=' + cardId;
+    }catch(e){
+      console.error('Supabase save failed, falling back to a self-contained link:', e);
+    }
+  }
+
+  // Fallback: no Supabase configured (or the insert failed) — encode the
+  // card data directly into the URL, same as before.
   const payload = { f: state.from, t: state.to, r: state.relation, m: state.message };
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   const longUrl = location.origin + location.pathname + '?card=' + encoded;
-
-  document.getElementById('shareSection').style.display = 'block';
-  document.getElementById('viewerNote').style.display = 'none';
-  document.getElementById('shareLink').innerText = 'Creating your short link…';
-  window.__shareUrl = longUrl;
-
-  const shortUrl = await shortenShareUrl(longUrl);
-  document.getElementById('shareLink').innerText = shortUrl;
-  window.__shareUrl = shortUrl;
+  return await shortenShareUrl(longUrl);
 }
 
 /* ============ LINK SHORTENING ============
@@ -767,20 +862,45 @@ function downloadCertificate(){
 }
 
 /* ============ RESTORE FROM SHARED LINK ============
-   The recipient sees the full site — every page except payment. */
-(function restoreFromLink(){
+   The recipient sees the full site — every page except payment.
+   Tries the Supabase-backed "?id=" link first, then falls back to the
+   legacy self-contained "?card=" encoded link if present. */
+(async function restoreFromLink(){
   const params = new URLSearchParams(location.search);
+  const cardId = params.get('id');
   const card = params.get('card');
-  if(!card) return;
-  try{
-    const payload = JSON.parse(decodeURIComponent(escape(atob(card))));
+
+  function loadState(from, to, relation, message){
     isSharedView = true;
-    state.from = payload.f; state.to = payload.t; state.relation = payload.r; state.message = payload.m;
+    state.from = from; state.to = to; state.relation = relation; state.message = message;
     selectRelation(state.relation);
     applyNamesToUI();
     document.getElementById('messageBox').value = state.message;
     goTo('ask');
-  }catch(e){ /* malformed link, ignore and show the normal start screen */ }
+  }
+
+  if(cardId && supabaseClient){
+    try{
+      const { data, error } = await supabaseClient
+        .from('rakhi_cards')
+        .select('from_name, to_name, relation, message')
+        .eq('id', cardId)
+        .single();
+      if(error || !data) throw error || new Error('Card not found');
+      loadState(data.from_name, data.to_name, data.relation, data.message);
+      return;
+    }catch(e){
+      console.error('Could not load card from Supabase:', e);
+      /* fall through in case there's also a legacy ?card= param */
+    }
+  }
+
+  if(card){
+    try{
+      const payload = JSON.parse(decodeURIComponent(escape(atob(card))));
+      loadState(payload.f, payload.t, payload.r, payload.m);
+    }catch(e){ /* malformed link, ignore and show the normal start screen */ }
+  }
 })();
 </script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
