@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Rakhi Surprise For You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pin-red:#e60023;
+    --pin-red-dark:#ad081b;
+    --pin-bg:#f6f2f1;
+    --card-bg:#ffffff;
+    --ink-red:#e60023;
+    --pill:#e60023;
+    --pill-dark:#ad081b;
+    --text-dark:#3a2a22;
+    --text-soft:#6b5b56;
+    --gold:#e0a638;
+    --line:#efe3e0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    font-family:'Poppins', sans-serif;
+    background: var(--pin-bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    color:var(--text-dark);
+  }
+  .stage{ width:100%; max-width:480px; }
+  .frame{
+    position:relative;
+    background: var(--card-bg);
+    border-radius:32px;
+    padding:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 20px 48px rgba(0,0,0,0.14);
+  }
+  .card{
+    background:var(--card-bg);
+    border-radius:26px;
+    min-height:640px;
+    padding:34px 26px 28px;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+  }
+  .browserbar{
+    position:absolute; top:0;left:0;right:0; height:34px;
+    background:#faf7f6; border-bottom:1px solid var(--line); border-radius:26px 26px 0 0;
+    display:flex; align-items:center; gap:8px; padding:0 12px;
+  }
+  .browserbar span{width:9px;height:9px;border-radius:50%;background:#e2d5d2;display:inline-block;}
+  .screen{
+    display:none; width:100%; flex-direction:column; align-items:center; justify-content:center;
+    flex:1; padding-top:30px; animation:fadein .45s ease;
+  }
+  .screen.active{display:flex;}
+  @keyframes fadein{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+  .arc-heading{width:100%; max-width:380px; margin-bottom:6px;}
+  .arc-heading svg{width:100%; height:auto; overflow:visible;}
+  .arc-heading text{ font-family:'Caveat', cursive; font-weight:700; fill:var(--ink-red); font-size:34px; }
+  h2.plain{ font-family:'Caveat', cursive; color:var(--ink-red); font-size:34px; font-weight:700; margin:6px 0 10px; line-height:1.15; }
+  .subtext{ font-size:15px; color:var(--text-soft); margin:0 0 6px; font-family:'Poppins',sans-serif; }
+
+  .shin{ width:190px; max-width:60%; margin:10px auto 6px; filter:drop-shadow(0 6px 14px rgba(0,0,0,0.14)); border-radius:20px; }
+  .shin.small{width:130px;}
+  .shin.tiny{width:88px;}
+  .shin.round{border-radius:22px; border:6px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.06), 0 14px 28px rgba(0,0,0,0.16);}
+  .shin.flip{transform:scaleX(-1);}
+  .shin.tilt{transform:rotate(-6deg);}
+  .shin.tiltr{transform:rotate(5deg);}
+  .shin.warm{filter: drop-shadow(0 6px 14px rgba(0,0,0,0.14));}
+
+  .pill-row{ display:flex; gap:14px; margin-top:18px; flex-wrap:wrap; justify-content:center; }
+  .pill{
+    font-family:'Poppins', sans-serif; font-weight:700; letter-spacing:0.2px;
+    font-size:15px; color:#fff; background:var(--pill);
+    border:none; border-radius:999px; padding:13px 28px;
+    cursor:pointer; box-shadow:0 2px 6px rgba(230,0,35,0.35); transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .pill:hover{background:var(--pill-dark); box-shadow:0 4px 12px rgba(230,0,35,0.4);}
+  .pill:active{transform:scale(0.97);}
+  .pill.ghost{ background:#f3ecec; color:var(--text-dark); box-shadow:none; }
+  .pill.ghost:hover{ background:#ece2e2; }
+  .pill.wide{padding:13px 42px;}
+  .pill.small2{padding:9px 18px; font-size:13px; box-shadow:none;}
+  .pill:disabled{opacity:.5; cursor:not-allowed;}
+
+  input[type=text], textarea{
+    font-family:'Poppins', sans-serif; width:100%; border:2px solid var(--line); background:#faf7f6;
+    border-radius:16px; padding:12px 14px; font-size:15px; color:var(--text-dark); margin-bottom:14px; outline:none;
+  }
+  input:focus, textarea:focus{border-color:var(--pill);}
+  label.field-label{ align-self:flex-start; font-weight:600; font-size:12.5px; color:var(--text-soft); text-transform:uppercase; letter-spacing:.6px; margin:6px 0 4px; }
+  .form-wrap{width:100%; display:flex; flex-direction:column; align-items:flex-start;}
+
+  .relation-toggle{display:flex; gap:10px; width:100%; margin-bottom:6px;}
+  .relation-toggle button{
+    flex:1; padding:10px; border-radius:16px; border:2px solid var(--line); background:#faf7f6;
+    font-family:'Poppins',sans-serif; font-weight:600; color:var(--text-soft); cursor:pointer; transition:all .12s ease;
+  }
+  .relation-toggle button.selected{ background:var(--pill); border-color:var(--pill); color:#fff; }
+
+  .divider{ width:100%; border:none; border-top:1px solid var(--line); margin:14px 0; }
+
+  .labels-wrap{position:relative; width:100%; max-width:340px; margin:12px auto 4px;}
+  .labels-wrap img{width:46%; margin:60px auto 0; display:block;}
+  .lbl{ position:absolute; font-family:'Caveat', cursive; font-weight:700; color:var(--ink-red); font-size:19px; line-height:1.05; text-align:center; }
+
+  .certificate{
+    border:1px solid var(--line); border-radius:20px; padding:18px 16px;
+    background: #fff;
+    box-shadow:0 2px 10px rgba(0,0,0,0.06);
+    position:relative; width:100%;
+  }
+  .certificate .ribbon{width:46px; margin:0 auto 6px;}
+  .certificate h3{ font-family:'Caveat', cursive; color:var(--ink-red); font-size:30px; margin:0 0 2px; }
+  .certificate .to-line{font-size:12px; color:var(--text-soft); text-transform:uppercase; letter-spacing:1.2px; margin-bottom:2px; font-family:'Poppins',sans-serif; font-weight:600;}
+  .certificate .name{font-family:'Caveat', cursive; font-size:26px; color:var(--text-dark); margin-bottom:8px;}
+  .certificate p{font-size:14px; color:var(--text-soft); line-height:1.55; margin:0; font-family:'Poppins',sans-serif;}
+
+  .msg-box{ width:100%; text-align:left; }
+  textarea{ min-height:110px; resize:vertical; font-size:14.5px; line-height:1.5; font-family:'Poppins',sans-serif; }
+  .ai-row{display:flex; gap:10px; width:100%; margin-bottom:6px;}
+  .ai-row .pill{flex:1; padding:10px 8px; font-size:12.5px; box-shadow:none;}
+  .ai-row .pill.ghost{box-shadow:none;}
+  .ai-status{font-size:12px; color:var(--text-soft); margin-bottom:8px; min-height:14px; font-family:'Poppins',sans-serif;}
+
+  .price-card{ width:100%; background:#faf7f6; border:1px solid var(--line); border-radius:18px; padding:16px; margin-bottom:14px; }
+  .price-row{display:flex; justify-content:space-between; font-size:14px; margin-bottom:6px; color:var(--text-soft); font-family:'Poppins',sans-serif;}
+  .price-row.total{font-weight:700; font-size:20px; color:var(--ink-red); border-top:1px solid var(--line); padding-top:8px; margin-top:8px;}
+  .coupon-row{display:flex; gap:8px; margin-bottom:6px;}
+  .coupon-row input{margin-bottom:0;}
+  .coupon-msg{font-size:12.5px; min-height:16px; margin-bottom:8px; font-family:'Poppins',sans-serif;}
+  .coupon-msg.ok{color:#2e7d32;}
+  .coupon-msg.err{color:var(--pill);}
+  .discount-chips{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:4px 0 12px;}
+  .chip{
+    font-family:'Poppins',sans-serif; font-weight:600; font-size:12.5px; color:var(--pill);
+    background:#fff; border:2px solid var(--pill); border-radius:20px; padding:6px 12px; cursor:pointer;
+  }
+  .chip.on{background:var(--pill); color:#fff;}
+
+  .dots{display:flex; gap:6px; justify-content:center; margin-top:14px; flex-wrap:wrap;}
+  .dots span{width:6px; height:6px; border-radius:50%; background:var(--line);}
+  .dots span.on{background:var(--pill); width:16px; border-radius:4px;}
+
+  .success-badge{
+    width:70px; height:70px; border-radius:50%; background:#2e7d32;
+    color:#fff; display:flex; align-items:center; justify-content:center; font-size:34px; margin-bottom:12px; box-shadow:0 4px 14px rgba(46,125,50,0.35);
+  }
+
+  /* Gifts */
+  .gift-row{ display:flex; gap:18px; justify-content:center; margin:20px 0 6px; flex-wrap:wrap; }
+  .gift-box{ cursor:pointer; text-align:center; background:none; border:none; padding:0; font-family:'Poppins',sans-serif; }
+  .gift-box .box{
+    width:84px; height:84px; border-radius:20px;
+    background:var(--pill);
+    position:relative; box-shadow:0 2px 6px rgba(230,0,35,0.3); margin-bottom:8px;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .15s ease;
+  }
+  .gift-box:hover .box{transform:translateY(-3px);}
+  .gift-box .box::after{ content:"🎀"; font-size:30px; }
+  .gift-box .label{font-size:12px; font-weight:600; color:var(--text-soft);}
+  .gift-box.opened .box{ background:#c9c2c0; box-shadow:none; }
+  .gift-box.opened .label::after{content:" ✓"; color:#2e7d32;}
+
+  .cert2{
+    width:100%; border-radius:20px; padding:22px 18px; text-align:center;
+    background:#fff;
+    border:1px solid var(--line);
+    box-shadow:0 2px 10px rgba(0,0,0,0.06);
+  }
+  .cert2 .stamp{
+    width:56px;height:56px;border-radius:50%;
+    background:var(--pill);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; margin:0 auto 10px; text-align:center; line-height:1.2;
+    font-family:'Poppins',sans-serif;
+  }
+  .cert2 h3{font-family:'Poppins',sans-serif; font-size:12px; letter-spacing:1.5px; color:var(--text-soft); font-weight:700; margin:0 0 4px;}
+  .cert2 .to-line{font-size:11px; color:var(--text-soft); letter-spacing:1px; margin-bottom:4px; font-family:'Poppins',sans-serif;}
+  .cert2 .name{font-family:'Caveat', cursive; font-size:28px; color:var(--ink-red); margin-bottom:8px;}
+  .cert2 p{font-size:13px; color:var(--text-soft); margin:0 0 6px; line-height:1.5; font-family:'Poppins',sans-serif;}
+  .cert2 .A{
+    width:34px;height:34px;border-radius:50%; background:var(--pill); color:#fff; font-weight:700;
+    display:flex; align-items:center; justify-content:center; margin:6px auto 0; font-size:14px;
+    font-family:'Poppins',sans-serif;
+  }
+
+  .wish-photo{ width:100%; border-radius:20px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.06), 0 14px 28px rgba(0,0,0,0.14); margin-bottom:12px; }
+  .wish-photo img{width:100%; display:block;}
+  .shin-duo{ display:flex; gap:14px; justify-content:center; align-items:flex-end; margin-bottom:10px; }
+  .shin-duo img{width:80px; border-radius:16px; box-shadow:0 6px 14px rgba(0,0,0,0.16);}
+
+  .gif-card{ width:100%; border-radius:20px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.06), 0 14px 28px rgba(0,0,0,0.14); }
+  .gif-card img{width:100%; display:block;}
+
+  .link-box{
+    width:100%; background:#faf7f6; border:1px solid var(--line); border-radius:16px; padding:12px; margin-top:10px;
+    font-size:12px; word-break:break-all; color:var(--text-soft); text-align:left; font-family:'Poppins',sans-serif;
+  }
+
+  .music-toggle{
+    position:fixed; bottom:18px; right:18px; z-index:50;
+    width:48px; height:48px; border-radius:50%;
+    background:var(--pill);
+    color:#fff; border:none; box-shadow:0 4px 14px rgba(230,0,35,0.35);
+    display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer;
+  }
+  .music-toggle.muted{filter:grayscale(1); opacity:.6;}
+
+  @media (max-width:380px){
+    .card{padding:26px 16px 22px;}
+    h2.plain{font-size:28px;}
+    .gift-box .box{width:72px; height:72px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="frame">
+    <div class="card" id="card">
+      <div class="browserbar"><span></span><span></span><span></span></div>
+
+      <!-- FORM (now includes the message + AI generator + certificate preview) -->
+      <div class="screen active" id="screen-form">
+        <div class="arc-heading">
+          <svg viewBox="0 0 380 90">
+            <path id="curveform" d="M 20 80 Q 190 10 360 80" fill="transparent"/>
+            <text><textPath href="#curveform" startOffset="50%" text-anchor="middle">A Rakhi Surprise</textPath></text>
+          </svg>
+        </div>
+        <p class="subtext">Let's set up your special Rakhi card 🧵</p>
+        <div class="form-wrap">
+          <label class="field-label">Your Name</label>
+          <input type="text" id="fromName" placeholder="e.g. Riya" oninput="updateLivePreview()">
+          <label class="field-label">Sending To</label>
+          <input type="text" id="toName" placeholder="e.g. Aarav" oninput="updateLivePreview()">
+          <label class="field-label">They are my...</label>
+          <div class="relation-toggle">
+            <button type="button" id="btn-brother" onclick="selectRelation('brother')">Brother 👦</button>
+            <button type="button" id="btn-sister" onclick="selectRelation('sister')">Sister 👧</button>
+          </div>
+
+          <hr class="divider">
+
+          <label class="field-label">Your Message</label>
+          <div class="msg-box">
+            <div class="ai-row">
+              <button type="button" class="pill ghost" onclick="useDefaultMessage()">Use Default</button>
+              <button type="button" class="pill" onclick="generateAIMessage()">✨ Generate with AI</button>
+            </div>
+            <div class="ai-status" id="aiStatus"></div>
+            <textarea id="messageBox"></textarea>
+          </div>
+
+          <div class="certificate" style="margin-top:4px;">
+            <div class="ribbon">🎗️</div>
+            <h3 id="certTitle">Best Sister Award</h3>
+            <div class="to-line">this award is presented to</div>
+            <div class="name" id="certName">—</div>
+            <p id="certBody">You are the most precious person I have ever had. I just wanna say thank you for being into my life, listening to all my rants, and being there when I needed you the most.</p>
+          </div>
+        </div>
+        <button class="pill wide" style="margin-top:18px;" onclick="startJourney()">Create My Rakhi Card</button>
+        <div class="dots" id="dots"></div>
+      </div>
+
+      <!-- ASK: DO YOU WANNA SEE IT -->
+      <div class="screen" id="screen-ask">
+        <div class="arc-heading">
+          <svg viewBox="0 0 380 90">
+            <path id="curveask" d="M 15 80 Q 190 5 365 80" fill="transparent"/>
+            <text><textPath href="#curveask" startOffset="50%" text-anchor="middle">I have made something for you</textPath></text>
+          </svg>
+        </div>
+        <img class="shin round" src="data:image/jpeg;base64,PLACEHOLDER" alt="Hello Kitty">
+        <p class="subtext" style="font-size:17px; font-weight:700; color:var(--text-dark);">Do you wanna see it?</p>
+        <div class="pill-row">
+          <button class="pill" onclick="goTo('excited')">Yes</button>
+          <button class="pill ghost" onclick="goTo('dare')">No</button>
+        </div>
+      </div>
+
+      <!-- DARE PAGE (separate page when No is clicked) -->
+      <div class="screen" id="screen-dare">
+        <h2 class="plain" style="font-size:30px;">HOW DARE YOU!?</h2>
+        <img class="shin round tilt" src="data:image/jpeg;base64,PLACEHOLDER" alt="Hello Kitty pouting">
+        <p class="subtext">Okay okay, don't cry... let's try that again 🥺</p>
+        <button class="pill" style="margin-top:10px;" onclick="goTo('ask')">Try Again</button>
+      </div>
+
+      <!-- ARE YOU REALLY EXCITED -->
+      <div class="screen" id="screen-excited">
+        <div class="arc-heading">
+          <svg viewBox="0 0 380 90">
+            <path id="curveexc" d="M 15 80 Q 190 5 365 80" fill="transparent"/>
+            <text><textPath href="#curveexc" startOffset="50%" text-anchor="middle">Are you really excited?</textPath></text>
+          </svg>
+        </div>
+        <img class="shin round tiltr" src="data:image/jpeg;base64,PLACEHOLDER" alt="Hello Kitty excited">
+        <div class="pill-row">
+          <button class="pill" onclick="goTo('youaremy')">Yes</button>
+          <button class="pill" onclick="goTo('youaremy')">Yes</button>
+        </div>
+      </div>
+
+      <!-- YOU ARE MY -->
+      <div class="screen" id="screen-youaremy">
+        <div class="arc-heading">
+          <svg viewBox="0 0 380 90">
+            <path id="curveyam" d="M 30 80 Q 190 0 350 80" fill="transparent"/>
+            <text><textPath href="#curveyam" startOffset="50%" text-anchor="middle">You Are My</textPath></text>
+          </svg>
+        </div>
+        <div class="labels-wrap">
+          <div class="lbl" style="top:2%; left:0%; width:32%;">bank account 💳</div>
+          <div class="lbl" style="top:0%; right:0%; width:32%;">google maps 🗺️</div>
+          <div class="lbl" style="top:22%; right:-4%; width:34%;" id="stealerLabel">food/clothes stealer 👕</div>
+          <div class="lbl" style="top:52%; right:-2%; width:30%;">crybaby 😭</div>
+          <div class="lbl" style="bottom:0%; right:2%; width:30%;">bestie by choice 💕</div>
+          <div class="lbl" style="bottom:0%; left:-2%; width:30%;">entertainment source 🎬</div>
+          <div class="lbl" style="top:26%; left:-6%; width:30%;">my lifeline ❤️</div>
+          <img class="shin warm" src="data:image/jpeg;base64,PLACEHOLDER" alt="Hello Kitty with teddy bear">
+        </div>
+        <button class="pill wide" style="margin-top:16px;" onclick="goTo('gifts')">Continue</button>
+      </div>
+
+      <!-- GIFTS -->
+      <div class="screen" id="screen-gifts">
+        <div class="arc-heading">
+          <svg viewBox="0 0 380 90">
+            <path id="curvegift" d="M 15 80 Q 190 5 365 80" fill="transparent"/>
+            <text><textPath href="#curvegift" startOffset="50%" text-anchor="middle">Each gift has something</textPath></text>
+          </svg>
+        </div>
+        <p class="subtext" style="font-weight:700;">Click on them, one by one 🎁</p>
+        <div class="gift-row">
+          <button class="gift-box" id="gift1" onclick="openGift(1)"><div class="box"></div><div class="label">Gift 1</div></button>
+          <button class="gift-box" id="gift2" onclick="openGift(2)"><div class="box"></div><div class="label">Gift 2</div></button>
+          <button class="gift-box" id="gift3" onclick="openGift(3)"><div class="box"></div><div class="label">Gift 3</div></button>
+        </div>
+        <button class="pill wide" style="margin-top:22px;" onclick="continueFromGifts()" id="giftsContinueBtn">Continue ➜</button>
+      </div>
+
+      <!-- GIFT 1: RAKSHA BANDHAN WISH IMAGE + SHINCHAN DUO -->
+      <div class="screen" id="screen-gift1">
+        <div class="wish-photo">
+          <img src="data:image/png;base64,PLACEHOLDER" alt="Happy Raksha Bandhan">
+        </div>
+        <div class="shin-duo">
+          <img src="data:image/jpeg;base64,PLACEHOLDER" alt="Hello Kitty 1">
+          <img src="data:image/jpeg;base64,PLACEHOLDER" alt="Hello Kitty 2" class="flip">
+        </div>
+        <p class="subtext" id="wishCaption" style="font-weight:700;">Happy Raksha Bandhan!</p>
+        <button class="pill" style="margin-top:10px;" onclick="goTo('gifts')">Back to Gifts</button>
+      </div>
+
+      <!-- GIFT 2: BEST BROTHER/SISTER CERTIFICATE -->
+      <div class="screen" id="screen-gift2">
+        <div class="cert2">
+          <div class="stamp">CERT<br>★</div>
+          <h3>CERTIFICATE OF ACHIEVEMENT</h3>
+          <div class="to-line">this certificate is presented to</div>
+          <div class="name" id="cert2Name">—</div>
+          <p id="cert2Body">This is to certify that you have been recognized as the World's Best Brother!</p>
+          <p style="font-style:italic;">Thanks for being so wonderful.</p>
+          <div class="A">A+</div>
+        </div>
+        <button class="pill" style="margin-top:16px;" onclick="goTo('gifts')">Back to Gifts</button>
+      </div>
+
+      <!-- GIFT 3: GIF -->
+      <div class="screen" id="screen-gift3">
+        <h2 class="plain" style="font-size:26px;">One more thing...</h2>
+        <div class="gif-card">
+          <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzYwMjNhbmJsZXlmMDN0cDdmNnEwNnVlczFvYXdneTlrc2h0bWQzOCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/0Or2NvIm6jcY1ulG6q/giphy.gif" alt="gift gif">
+        </div>
+        <button class="pill" style="margin-top:16px;" onclick="goTo('gifts')">Back to Gifts</button>
+      </div>
+
+      <!-- WORLD'S BEST BROTHER/SISTER CERTIFICATE (guaranteed screen, always shown before payment) -->
+      <div class="screen" id="screen-certificate">
+        <div class="arc-heading">
+          <svg viewBox="0 0 380 90">
+            <path id="curveprecert" d="M 15 80 Q 190 5 365 80" fill="transparent"/>
+            <text><textPath href="#curveprecert" startOffset="50%" text-anchor="middle">Your Official Certificate</textPath></text>
+          </svg>
+        </div>
+        <div class="cert2" id="preCertBox">
+          <div class="stamp">CERT<br>★</div>
+          <h3 id="preCertTitle">WORLD'S BEST BROTHER</h3>
+          <div class="to-line">this certificate is presented to</div>
+          <div class="name" id="preCertName">—</div>
+          <p id="preCertBody">This is to certify that you have been recognized as the World's Best Brother!</p>
+          <p style="font-style:italic;">Thanks for being so wonderful.</p>
+          <div class="A">A+</div>
+        </div>
+        <button class="pill wide" style="margin-top:16px;" onclick="continueFromCertificate()">Continue ➜</button>
+      </div>
+
+      <!-- PAYMENT (skipped when opening a shared / gifted link) -->
+      <div class="screen" id="screen-payment">
+        <h2 class="plain" style="font-size:28px;">Unlock Your Rakhi Card</h2>
+        <p class="subtext">One small gift to make it official 🧿</p>
+        <div class="price-card">
+          <div class="price-row"><span>Rakhi Card (Digital)</span><span id="basePrice">₹99</span></div>
+          <div class="price-row" id="discountRow" style="display:none;"><span id="discountLabel">Discount</span><span id="discountValue">-₹0</span></div>
+          <div class="price-row total"><span>Total</span><span id="totalPrice">₹99</span></div>
+        </div>
+
+        <div class="coupon-row">
+          <input type="text" id="couponInput" placeholder="Have a coupon code?">
+          <button class="pill ghost" onclick="applyCoupon()">Apply</button>
+        </div>
+        <div class="coupon-msg" id="couponMsg"></div>
+        <button class="pill wide" onclick="payNow()">Pay & Reveal Card</button>
+        <p style="font-size:11px; color:#b89a86; margin-top:10px;">Secured by Razorpay</p>
+      </div>
+
+      <!-- FINAL REVEAL -->
+      <div class="screen" id="screen-final">
+        <div class="success-badge">✓</div>
+        <h2 class="plain">To my forever best friend ❤️</h2>
+        <p id="finalMessage" style="font-size:14.5px; line-height:1.6; color:#5c4a3f; margin-top:4px;"></p>
+        <img class="shin small round" id="finalShin" src="data:image/jpeg;base64,PLACEHOLDER" alt="Hello Kitty thank you">
+        <p class="subtext" style="margin-top:10px;">Happy Raksha Bandhan, <span id="finalToName"></span>! 🪢</p>
+
+        <div class="cert2" id="finalCertBox" style="margin-top:18px;">
+          <div class="stamp">CERT<br>★</div>
+          <h3 id="finalCertTitle">WORLD'S BEST BROTHER</h3>
+          <div class="to-line">this certificate is presented to</div>
+          <div class="name" id="finalCertName">—</div>
+          <p id="finalCertBody">This is to certify that you have been recognized as the World's Best Brother!</p>
+          <p style="font-style:italic;">Thanks for being so wonderful.</p>
+          <div class="A">A+</div>
+        </div>
+        <button class="pill" style="margin-top:10px;" onclick="downloadCertificate()">⬇️ Download Certificate</button>
+
+        <div id="shareSection" style="width:100%; display:none;">
+          <p class="subtext" style="font-weight:700; margin-top:14px;">Your permanent card link 🔗</p>
+          <div class="link-box" id="shareLink"></div>
+          <div class="pill-row" style="margin-top:10px;">
+            <button class="pill ghost" id="previewCardBtn" style="display:none;">👀 Preview Your Card</button>
+            <button class="pill" onclick="copyShareLink()">Copy Link</button>
+          </div>
+        </div>
+        <div id="viewerNote" style="display:none; margin-top:14px;">
+          <button class="pill ghost" onclick="location.href=location.pathname">Make Your Own Rakhi Card</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MUSIC: paste a direct .mp3/.ogg URL below to enable background music across the site -->
+<audio id="bgMusic" loop></audio>
+<button class="music-toggle muted" id="musicToggle" onclick="toggleMusic()" title="Add a music link in the code to enable">🎵</button>
+
+<!-- Supabase client library — powers permanent card storage + link generation -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ============ MUSIC SETUP ============
+   To hard-code your own background track, paste a direct audio file URL
+   (mp3/ogg, hosted anywhere reachable over https) into MUSIC_SRC below.
+   Leaving it blank keeps the music button disabled. */
+const MUSIC_SRC = ""; // <-- put your hosted music link here, e.g. "https://yourhost.com/song.mp3"
+
+const bgMusic = document.getElementById('bgMusic');
+const musicBtn = document.getElementById('musicToggle');
+let musicPlaying = false;
+if(MUSIC_SRC){
+  bgMusic.src = MUSIC_SRC;
+  musicBtn.classList.remove('muted');
+  musicBtn.title = "Play / pause music";
+}
+function toggleMusic(){
+  if(!MUSIC_SRC) return;
+  if(musicPlaying){ bgMusic.pause(); musicBtn.innerText = '🔇'; }
+  else { bgMusic.play().catch(()=>{}); musicBtn.innerText = '🎵'; }
+  musicPlaying = !musicPlaying;
+}
+
+/* ============ SUPABASE SETUP ============
+   This card uses Supabase (a free hosted Postgres database) so that each
+   finished, paid-for card gets a real permanent record and a short shareable
+   link — instead of stuffing all the card data into the URL itself.
+
+   Table required (run once in the Supabase SQL editor for this project):
+
+        create table public.rakhi_cards (
+          id text primary key,
+          from_name text not null,
+          to_name text not null,
+          relation text not null,
+          message text not null,
+          created_at timestamptz default now()
+        );
+
+        alter table public.rakhi_cards enable row level security;
+
+        create policy "Public can create cards"
+          on public.rakhi_cards for insert
+          to anon
+          with check (true);
+
+        create policy "Public can read cards"
+          on public.rakhi_cards for select
+          to anon
+          using (true);
+
+   If these are left unconfigured (or the insert fails for any reason), the
+   site automatically falls back to the old self-contained link (card data
+   encoded into the URL and shortened via is.gd), so sharing never breaks
+   either way. */
+const SUPABASE_URL = "https://iliakhaufgpjjtwamisn.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsaWFraGF1Zmdwamp0d2FtaXNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTU0NTMsImV4cCI6MjA5NjQzMTQ1M30.nim8jt-cUhb3IIWjnd0FC3NF6xS_gg8RelBBJG1bIno";
+
+const supabaseReady = window.supabase
+  && SUPABASE_URL.startsWith('https://')
+  && !SUPABASE_URL.includes('YOUR-PROJECT-ID')
+  && !SUPABASE_ANON_KEY.includes('YOUR-SUPABASE');
+
+const supabaseClient = supabaseReady
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+/* Short, human-friendly, URL-safe card id (e.g. "aK7pQ2mX") */
+function generateCardId(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  let id = '';
+  for(let i = 0; i < 8; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id;
+}
+
+/* ============ STATE ============ */
+let state = { from:'', to:'', relation:'brother', total:99, discountPercent:0, message:'' };
+let giftsOpened = { 1:false, 2:false, 3:false };
+let isSharedView = false;
+
+function selectRelation(r){
+  state.relation = r;
+  document.getElementById('btn-brother').classList.toggle('selected', r==='brother');
+  document.getElementById('btn-sister').classList.toggle('selected', r==='sister');
+  updateLivePreview();
+}
+selectRelation('brother');
+
+function getLiveInputs(){
+  return {
+    from: document.getElementById('fromName').value.trim(),
+    to: document.getElementById('toName').value.trim(),
+    relation: state.relation
+  };
+}
+
+function updateLivePreview(){
+  const live = getLiveInputs();
+  document.getElementById('certTitle').innerText = live.relation==='sister' ? 'Best Sister Award' : 'Best Brother Award';
+  document.getElementById('certName').innerText = live.to || '—';
+}
+updateLivePreview();
+
+function startJourney(){
+  const live = getLiveInputs();
+  if(!live.from || !live.to){ alert('Please fill in both names to continue 💌'); return; }
+  state.from = live.from; state.to = live.to;
+  applyNamesToUI();
+  goTo('ask');
+}
+
+function applyNamesToUI(){
+  const rel = state.relation;
+  document.getElementById('stealerLabel').innerText = rel==='sister' ? 'clothes stealer 👗' : 'snacks stealer 🍔';
+  document.getElementById('certTitle').innerText = rel==='sister' ? 'Best Sister Award' : 'Best Brother Award';
+  document.getElementById('certName').innerText = state.to;
+  document.getElementById('finalToName').innerText = state.to;
+
+  const relWord = rel==='sister' ? 'Sister' : 'Brother';
+  document.getElementById('wishCaption').innerText = `Happy Raksha Bandhan, ${state.to}! You're the coolest ${relWord.toLowerCase()} ever. I'm so lucky to have you.`;
+
+  document.getElementById('cert2Name').innerText = `Best ${relWord} Of The World`;
+  document.getElementById('cert2Body').innerText = `This is to certify that ${state.to} has been recognized as the World's Best ${relWord}!`;
+
+  document.getElementById('preCertTitle').innerText = `WORLD'S BEST ${relWord.toUpperCase()}`;
+  document.getElementById('preCertName').innerText = state.to;
+  document.getElementById('preCertBody').innerText = `This is to certify that ${state.to} has been recognized as the World's Best ${relWord}!`;
+
+  document.getElementById('finalCertTitle').innerText = `WORLD'S BEST ${relWord.toUpperCase()}`;
+  document.getElementById('finalCertName').innerText = state.to;
+  document.getElementById('finalCertBody').innerText = `This is to certify that ${state.to} has been recognized as the World's Best ${relWord}!`;
+}
+
+const screenIds = ['form','ask','dare','excited','youaremy','gifts','gift1','gift2','gift3','certificate','payment','final'];
+const dotOrder = ['form','ask','excited','youaremy','gifts','certificate','payment','final'];
+function goTo(id){
+  screenIds.forEach(i=>document.getElementById('screen-'+i).classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  renderDots(id);
+  document.getElementById('card').scrollTop = 0;
+}
+function renderDots(active){
+  const dots = document.getElementById('dots');
+  if(!dots) return;
+  dots.innerHTML='';
+  dotOrder.forEach(id=>{
+    const s=document.createElement('span');
+    if(id===active) s.className='on';
+    dots.appendChild(s);
+  });
+}
+renderDots('form');
+
+function openGift(n){
+  giftsOpened[n] = true;
+  document.getElementById('gift'+n).classList.add('opened');
+  goTo('gift'+n);
+}
+
+function continueFromGifts(){
+  // The World's Best Brother/Sister certificate is a guaranteed step for everyone,
+  // shown right before payment (and before the final reveal on a shared link).
+  goTo('certificate');
+}
+
+function continueFromCertificate(){
+  if(isSharedView){
+    // A gifted / shared link skips payment entirely — it was already paid for.
+    document.getElementById('finalMessage').innerText = state.message;
+    document.getElementById('shareSection').style.display = 'none';
+    document.getElementById('viewerNote').style.display = 'block';
+    goTo('final');
+  } else {
+    goTo('payment');
+  }
+}
+
+function defaultMessageText(live){
+  const rel = live.relation === 'sister' ? 'sister' : 'brother';
+  return `To my forever best friend ❤️\nI'm so grateful to have you in my life. Thank you for being my biggest supporter, my secret keeper, and the one who always knows how to make me smile. From endless talks to silly laughs and every moment in between, life feels brighter because of you.\n\nHappy Raksha Bandhan, my dear ${rel}. Wishing you all the happiness, love, peace, and success you truly deserve. Never forget how special, strong, and deeply loved you are.\n\n— ${live.from || 'Your sibling'}`;
+}
+
+function useDefaultMessage(){
+  document.getElementById('messageBox').value = defaultMessageText(getLiveInputs());
+  document.getElementById('aiStatus').innerText = '';
+}
+useDefaultMessage();
+
+async function generateAIMessage(){
+  const statusEl = document.getElementById('aiStatus');
+  statusEl.innerText = 'Writing a message with AI…';
+  try{
+    const live = getLiveInputs();
+    const rel = live.relation === 'sister' ? 'sister' : 'brother';
+    const prompt = `Write a warm, heartfelt Raksha Bandhan message (under 80 words) from ${live.from || 'a sibling'} to their ${rel} named ${live.to || 'sibling'}. Make it personal, warm, a little playful, and end with a Raksha Bandhan wish. Do not use quotation marks around it. Return only the message text.`;
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 300,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await response.json();
+    const text = (data.content || []).map(b=>b.text||'').join('').trim();
+    if(text){
+      document.getElementById('messageBox').value = text;
+      statusEl.innerText = 'Generated with AI ✨';
+    } else { throw new Error('empty'); }
+  }catch(e){
+    statusEl.innerText = 'Could not reach AI right now — kept your message as is.';
+  }
+}
+
+/* ============ DISCOUNTS ============ */
+function quickDiscount(pct){
+  state.discountPercent = pct;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on', Number(c.dataset.pct)===pct));
+  document.getElementById('couponMsg').className = 'coupon-msg ok';
+  document.getElementById('couponMsg').innerText = `${pct}% off applied 🎉`;
+  updatePrice();
+}
+
+function applyCoupon(){
+  const code = document.getElementById('couponInput').value.trim().toUpperCase();
+  // Secret codes — intentionally not printed anywhere on the page.
+  const map = { 'BRO10':10, 'BRO20':20, 'BRO30':30, 'BRO40':40, 'BRO100':100 };
+  const msgEl = document.getElementById('couponMsg');
+  if(map.hasOwnProperty(code)){
+    state.discountPercent = map[code];
+    document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on', Number(c.dataset.pct)===map[code]));
+    msgEl.className = 'coupon-msg ok';
+    msgEl.innerText = `Coupon applied: ${map[code]}% off 🎉`;
+  } else {
+    state.discountPercent = 0;
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+    msgEl.className = 'coupon-msg err';
+    msgEl.innerText = 'Invalid coupon code';
+  }
+  updatePrice();
+}
+
+function updatePrice(){
+  const base = 99;
+  const discountAmt = Math.round(base * state.discountPercent / 100);
+  state.total = base - discountAmt;
+  document.getElementById('basePrice').innerText = '₹' + base;
+  document.getElementById('totalPrice').innerText = '₹' + state.total;
+  const row = document.getElementById('discountRow');
+  if(state.discountPercent > 0){
+    row.style.display = 'flex';
+    document.getElementById('discountLabel').innerText = `Discount (${state.discountPercent}%)`;
+    document.getElementById('discountValue').innerText = '-₹' + discountAmt;
+  } else { row.style.display = 'none'; }
+}
+updatePrice();
+
+/* ============ RAZORPAY ============ */
+// Add your Razorpay Key ID below before going live.
+const RAZORPAY_KEY_ID = "rzp_live_Sz9gct8RO5E1jB";
+
+function payNow(){
+  if(state.total <= 0){ completeOrder(); return; }
+  if(!window.Razorpay){
+    alert('Razorpay checkout script not loaded. Add https://checkout.razorpay.com/v1/checkout.js and your Key ID to enable live payments.');
+    return;
+  }
+  const options = {
+    key: RAZORPAY_KEY_ID,
+    amount: state.total * 100,
+    currency: "INR",
+    name: "Rakhi Surprise Card",
+    description: `Rakhi card for ${state.to}`,
+    handler: function(response){ completeOrder(); },
+    prefill: { name: state.from },
+    theme: { color: "#c0392b" }
+  };
+  const rzp = new Razorpay(options);
+  rzp.open();
+}
+
+/* ============ SHAREABLE PERMANENT LINK ============
+   After payment, the finished card is saved as a real row in Supabase
+   (see SUPABASE SETUP above) under a short random id, and the share link
+   is just "?id=<that id>". Opening the link looks the id up in Supabase and
+   replays the whole experience (ask / excited / you-are-my / gifts / final)
+   but skips the payment page, since it's already been paid for and sent as
+   a gift.
+
+   If Supabase isn't configured yet (or the save fails for any reason, e.g.
+   offline), this automatically falls back to encoding the card data
+   straight into the URL and shortening it with is.gd, so sharing never
+   breaks either way. */
+async function completeOrder(){
+  state.message = document.getElementById('messageBox').value;
+  document.getElementById('finalMessage').innerText = state.message;
+  goTo('final');
+
+  document.getElementById('shareSection').style.display = 'block';
+  document.getElementById('viewerNote').style.display = 'none';
+  document.getElementById('shareLink').innerText = 'Saving your card…';
+  const previewBtn = document.getElementById('previewCardBtn');
+  if(previewBtn) previewBtn.style.display = 'none';
+
+  const shareUrl = await saveCardAndGetLink();
+  document.getElementById('shareLink').innerText = shareUrl;
+  window.__shareUrl = shareUrl;
+
+  // Let the person who paid preview the exact page their sibling will see.
+  if(previewBtn){
+    previewBtn.style.display = 'inline-block';
+    previewBtn.onclick = function(){ window.open(shareUrl, '_blank'); };
+  }
+}
+
+async function saveCardAndGetLink(){
+  const cardId = generateCardId();
+  const record = {
+    id: cardId,
+    from_name: state.from,
+    to_name: state.to,
+    relation: state.relation,
+    message: state.message
+  };
+
+  if(supabaseClient){
+    try{
+      const { error } = await supabaseClient.from('rakhi_cards').insert(record);
+      if(error) throw error;
+      return location.origin + location.pathname + '?id=' + cardId;
+    }catch(e){
+      console.error('Supabase save failed, falling back to a self-contained link:', e);
+    }
+  }
+
+  // Fallback: no Supabase configured (or the insert failed) — encode the
+  // card data directly into the URL, same as before.
+  const payload = { f: state.from, t: state.to, r: state.relation, m: state.message };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const longUrl = location.origin + location.pathname + '?card=' + encoded;
+  return await shortenShareUrl(longUrl);
+}
+
+/* ============ LINK SHORTENING ============
+   Uses the free is.gd API (no key needed) so the link sent to your special
+   someone is short and clean instead of a long base64 string. The shortened
+   link simply redirects to the full card link above, so nothing about the
+   card's "no server" design changes — it still opens the same experience.
+   If the shortening request fails for any reason (offline, blocked, etc.),
+   we quietly fall back to the original full-length link so sharing never breaks. */
+async function shortenShareUrl(longUrl){
+  try{
+    const resp = await fetch('https://is.gd/create.php?format=json&url=' + encodeURIComponent(longUrl));
+    const data = await resp.json();
+    if(data && data.shorturl) return data.shorturl;
+  }catch(e){ /* fall through to long link */ }
+  return longUrl;
+}
+function copyShareLink(){
+  navigator.clipboard.writeText(window.__shareUrl || '').then(()=>{
+    const btn = event.target; const old = btn.innerText;
+    btn.innerText = 'Copied!'; setTimeout(()=>btn.innerText = old, 1500);
+  });
+}
+
+/* ============ DOWNLOADABLE CERTIFICATE ============
+   Renders the "World's Best Brother/Sister" certificate shown on this page
+   into a PNG image the user can save to their device. */
+function downloadCertificate(){
+  const el = document.getElementById('finalCertBox');
+  if(!window.html2canvas){
+    alert('Certificate image tool did not load — please try again in a moment, or take a screenshot instead.');
+    return;
+  }
+  html2canvas(el, { backgroundColor: '#fffdfa', scale: 2 }).then(function(canvas){
+    const link = document.createElement('a');
+    const who = (state.to || 'my-sibling').replace(/[^a-z0-9]+/gi, '-');
+    link.download = 'best-' + (state.relation === 'sister' ? 'sister' : 'brother') + '-certificate-' + who + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(function(){
+    alert('Could not generate the certificate image. Please try taking a screenshot instead.');
+  });
+}
+
+/* ============ RESTORE FROM SHARED LINK ============
+   The recipient sees the full site — every page except payment.
+   Tries the Supabase-backed "?id=" link first, then falls back to the
+   legacy self-contained "?card=" encoded link if present. */
+(async function restoreFromLink(){
+  const params = new URLSearchParams(location.search);
+  const cardId = params.get('id');
+  const card = params.get('card');
+
+  function loadState(from, to, relation, message){
+    isSharedView = true;
+    state.from = from; state.to = to; state.relation = relation; state.message = message;
+    selectRelation(state.relation);
+    applyNamesToUI();
+    document.getElementById('messageBox').value = state.message;
+    goTo('ask');
+  }
+
+  if(cardId && supabaseClient){
+    try{
+      const { data, error } = await supabaseClient
+        .from('rakhi_cards')
+        .select('from_name, to_name, relation, message')
+        .eq('id', cardId)
+        .single();
+      if(error || !data) throw error || new Error('Card not found');
+      loadState(data.from_name, data.to_name, data.relation, data.message);
+      return;
+    }catch(e){
+      console.error('Could not load card from Supabase:', e);
+      /* fall through in case there's also a legacy ?card= param */
+    }
+  }
+
+  if(card){
+    try{
+      const payload = JSON.parse(decodeURIComponent(escape(atob(card))));
+      loadState(payload.f, payload.t, payload.r, payload.m);
+    }catch(e){ /* malformed link, ignore and show the normal start screen */ }
+  }
+})();
+</script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>
